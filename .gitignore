@@ -3,7 +3,10 @@
 # Locales
 INEGI/
 venv/
-
+data/
+.idea/
+.vscode/
+node_volumes/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

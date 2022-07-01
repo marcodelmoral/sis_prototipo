@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="">
+<head>
+    {% load static %}
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery="full" %}
+    {% block header %}{% endblock %}
+    {% block extra_header %}{% endblock %}
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static "dengue/main.css" %}"></link>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="navbar-nav">
+            {#            <a class="navbar-brand" href="#">#}
+            {#                <img class="dpd-logo" src="{% static "demo/logo.svg" %}" alt="Logo"/>#}
+            {#            </a>#}
+
+            <a class="nav-item nav-link btn btn-lg" href="{% url 'core:home' %}">Inicio</a>
+            <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:series' %}">Series</a>
+            <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:vectores' %}">Vectores</a>
+            <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:vectores2' %}">Vectores2</a>
+            <a class="nav-item nav-link btn btn-lg" target="_blank" href="#">Acerca de</a>
+
+        </div>
+    </nav>
+</header>
+{% block content %}{% endblock %}
+{% block footer %}
+{% endblock %}
+</body>
+{% block post_body %}{% endblock %}
+</html>

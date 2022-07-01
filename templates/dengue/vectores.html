@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load plotly_dash %}
+{% block header %}
+
+    {% plotly_header %}
+    {% plotly_message_pipe %}
+{% endblock %}
+
+{% block title %}Mapa{% endblock %}
+
+{% block content %}
+    <div class="card border-dark">
+        <div class="card-body">
+            <div class="{% plotly_class name="dengue_mapa" template_type="div-direct" %}">
+                {% plotly_direct name="dengue_mapa" %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {% plotly_footer %}
+{% endblock %}
