@@ -21,13 +21,17 @@ class Command(BaseCommand):
         self.map_diagnostico = dict((y, x) for x, y in Vector.DIAGNOSTICO)
         self.columnas = [
             "fol_id",
+            "ide_nom",
+            "ide_ape_pat",
+            "ide_ape_mat",
             "ide_sex",
             "num_ext",
+            "ide_fec_nac",
             "ide_cal",
             "ide_cp",
             "ide_col",
             "des_ocupacion",
-            "des_diag_final",
+            "cve_diag_final",
             "fec_sol_aten",
             "municipio_id"
             ]
@@ -44,7 +48,7 @@ class Command(BaseCommand):
         parser.add_argument('archivo', type=str, help='')
 
     def carga_datos(self, archivo):
-        df = pd.read_csv(archivo, encoding="latin-1", index_col=None, low_memory=False)
+        df = pd.read_csv(archivo, encoding="utf-8", index_col=None, low_memory=False)
         df = df.drop(columns=["Unnamed: 0"], axis=1)
         df.columns = [column.lower() for column in df.columns]
         df["ide_cal"] = df["des_cal"] + " " + df["ide_cal"]
@@ -60,6 +64,7 @@ class Command(BaseCommand):
         df['municipio_id'] = df[['y', 'x']].apply(self.procesa_entidad, axis=1)
 
         df['ide_cp'] = df['ide_cp'].fillna(value=0).astype(int).astype(str)
+        df['cve_diag_final'] = df['cve_diag_final'].astype(int)
 
         gdf = gpd.GeoDataFrame(df[self.columnas], geometry=gpd.points_from_xy(df.y, df.x))
         # gdf = gdf[self.columnas]

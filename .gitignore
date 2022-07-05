@@ -6,6 +6,7 @@ venv/
 data/
 .idea/
 .vscode/
+.history/
 node_volumes/
 
 # Byte-compiled / optimized / DLL files

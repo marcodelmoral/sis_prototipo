@@ -20,10 +20,10 @@ from django.urls import include, path
 from .api import router
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('__debug__/', include(debug_toolbar.urls)),
+    path("admin/", admin.site.urls),
+    path("__debug__/", include(debug_toolbar.urls)),
     path("api/v1/", include(router.urls)),
-    path('django_plotly_dash/', include('django_plotly_dash.urls')),
-    path('', include('core.urls', namespace='core')),
-    path('dengue/', include('dengue.urls', namespace='dengue'))
+    path("django_plotly_dash/", include("django_plotly_dash.urls")),
+    path("", include("core.urls", namespace="core")),
+    path("dengue/", include("dengue.urls", namespace="dengue")),
     ]

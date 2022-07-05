@@ -389,7 +389,7 @@ def update_graph_bar(year):
     fig_pie.update_layout(
         showlegend=False,
         )
-    print(df_bubble)
+
     fig_bubble = px.scatter_mapbox(
         df_bubble,
         lat=df_bubble.geometry.y,

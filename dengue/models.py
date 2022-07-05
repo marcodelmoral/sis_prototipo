@@ -7,13 +7,13 @@ class Vector(models.Model):
     SEXO = ((1, "Masculino"), (2, "Femenino"))
 
     DIAGNOSTICO = (
-        (1, "DENGUE NO GRAVE"),
-        (10, "DENGUE CON SIGNOS DE ALARMA - ENFERMEDAD POR VIRUS ZIKA"),
-        (3, "DENGUE GRAVE"),
-        (8, "ENFERMEDAD POR VIRUS ZIKA"),
-        (6, "DENGUE CON SIGNOS DE ALARMA - FIEBRE CHIKUNGUNYA"),
-        (2, "DENGUE CON SIGNOS DE ALARMA"),
-        (5, "DENGUE NO GRAVE - FIEBRE CHIKUNGUNYA"),
+        (1, "Dengue no grave"),
+        # (10, "DENGUE CON SIGNOS DE ALARMA - ENFERMEDAD POR VIRUS ZIKA"),
+        (3, "Dengue grave"),
+        # (8, "ENFERMEDAD POR VIRUS ZIKA"),
+        # (6, "DENGUE CON SIGNOS DE ALARMA - FIEBRE CHIKUNGUNYA"),
+        (2, "Dengue con signos de alarma"),
+        # (5, "DENGUE NO GRAVE - FIEBRE CHIKUNGUNYA"),
         )
     fol_id = models.CharField(max_length=255, blank=True, null=True)
     # creado = models.DateTimeField(auto_now_add=True)
@@ -26,12 +26,13 @@ class Vector(models.Model):
     ide_cal = models.CharField(max_length=255)
     # localidad = models.ForeignKey(Localidad, on_delete=models.SET_NULL, null=True)
     municipio = models.ForeignKey(Municipio, on_delete=models.SET_NULL, null=True)
-
+    ide_fec_nac = models.DateField(null=True, blank=True)
     ide_cp = models.CharField(max_length=5)
     ide_col = models.CharField(max_length=255, blank=True, null=True)
     # cve_diag_final = models.PositiveSmallIntegerField(choices=DIAGNOSTICO, blank=True, null=True)
     # precision = models.BooleanField(default=False)  # si/no
-    des_diag_final = models.CharField(null=True, blank=True, max_length=255)
+    # des_diag_final = models.CharField(null=True, blank=True, max_length=255)
+    cve_diag_final = models.PositiveSmallIntegerField(choices=DIAGNOSTICO, null=True)
     des_ocupacion = models.CharField(null=True, blank=True, max_length=255)
     geometry = models.PointField(srid=4326, null=True, default=None, blank=True)
     fec_sol_aten = models.DateField(null=True, blank=True)

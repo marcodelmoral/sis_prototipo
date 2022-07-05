@@ -16,10 +16,12 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="navbar-nav">
             {#            <a class="navbar-brand" href="#">#}
-            {#                <img class="dpd-logo" src="{% static "demo/logo.svg" %}" alt="Logo"/>#}
+            {#                <img class="dpd-logo" src="{% static "core/icon.ico" %}" alt="Logo"/>#}
             {#            </a>#}
 
             <a class="nav-item nav-link btn btn-lg" href="{% url 'core:home' %}">Inicio</a>
+            <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:analisis_dengue' %}">Análisis de casos de
+                dengue</a>
             <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:series' %}">Series</a>
             <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:vectores' %}">Vectores</a>
             <a class="nav-item nav-link btn btn-lg" href="{% url 'dengue:vectores2' %}">Vectores2</a>

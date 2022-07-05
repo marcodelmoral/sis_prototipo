@@ -2,6 +2,8 @@ from django.views.generic import TemplateView
 from rest_framework import viewsets
 from rest_framework_gis.filterset import GeoFilterSet
 
+# noinspection PyUnresolvedReferences
+from dengue.dash_apps import analisis_dengue, series, vectores, vectores2
 from dengue.models import Vector
 from dengue.serializers import VectorSerializer
 
@@ -12,7 +14,7 @@ class VectorFilter(GeoFilterSet):
 
     class Meta:
         model = Vector
-        fields = ['municipio', 'des_diag_final']
+        fields = ['municipio', 'cve_diag_final']
 
 
 class VectorViewSet(viewsets.ModelViewSet):
@@ -32,3 +34,7 @@ class VectoresAppView(TemplateView):
 
 class VectoresAppView2(TemplateView):
     template_name = 'dengue/vectores2.html'
+
+
+class AnalisisDengueAppView(TemplateView):
+    template_name = 'dengue/analisis_dengue.html'
