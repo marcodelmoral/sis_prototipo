@@ -16,21 +16,24 @@ from django.conf import settings
 from django_pandas.io import read_frame
 from django_plotly_dash import DjangoDash
 
+
 # Preparación de datos
 # ==============================================================================
 
-vector_qs = Vector.objects.all()
-municipios_qs = Municipio.objects.all()
-entidades_dict = list(Entidad.objects.values("cvegeo", "nomgeo"))
 
-qs_fechas = list(
-    Vector.objects.order_by("fec_sol_aten")[:1].union(
-        Vector.objects.order_by("-fec_sol_aten")[:1], all=True
-        )
-    )
+def entidades_dropdown_opciones():
+    return [{"label": "Todos", "value": "todos"}] + [
+        {"label": x["nomgeo"], "value": x["cvegeo"]} for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
+        ]
 
-vector_fecha_inicio = qs_fechas[0].fec_sol_aten
-vector_fecha_final = qs_fechas[1].fec_sol_aten
+
+def vectores_dropdown_fecha_inicio():
+    return Vector.objects.order_by("fec_sol_aten")[:1][0].fec_sol_aten
+
+
+def vectores_dropdown_fecha_final():
+    return Vector.objects.order_by("-fec_sol_aten")[:1][0].fec_sol_aten
+
 
 # Declaración de app
 # ==============================================================================
@@ -57,11 +60,7 @@ app.layout = dbc.Container(
                         placeholder="Selecciona entidades",
                         multi=True,
                         value=["todos"],
-                        options=[{"label": "Todos", "value": "todos"}]
-                                + [
-                                    {"label": x["nomgeo"], "value": x["cvegeo"]}
-                                    for x in entidades_dict
-                                    ],
+                        options=entidades_dropdown_opciones(),
                         ),
                     ),
                 dbc.Col(
@@ -81,8 +80,8 @@ app.layout = dbc.Container(
                         min_date_allowed=datetime.date(2000, 1, 12),
                         max_date_allowed=datetime.date(2040, 1, 12),
                         clearable=True,
-                        start_date=vector_fecha_inicio,
-                        end_date=vector_fecha_final,
+                        start_date=vectores_dropdown_fecha_inicio(),
+                        end_date=vectores_dropdown_fecha_final(),
                         display_format="D/MMM/YYYY",
                         ),
                     ),
@@ -157,7 +156,7 @@ app.layout = dbc.Container(
     Output("municipios-dropdown", "options"), Input("entidades-dropdown", "value")
     )
 def rellena_municipio_dropdown(entidades):
-    municipios = municipios_qs.all()
+    municipios = Municipio.objects.all()
     if entidades != ["todos"]:
         municipios = municipios.filter(entidad__in=entidades)
     lista_municipios = list(municipios.values("cvegeo", "nomgeo"))
@@ -177,7 +176,7 @@ def rellena_municipio_dropdown(entidades):
     Input("rango-fechas", "end_date"),
     )
 def update_map(municipios, entidad, fecha_inicial, fecha_final):
-    vectores = vector_qs.all()
+    vectores = Vector.objects.all()
 
     if municipios is None or entidad is None:
         raise PreventUpdate
