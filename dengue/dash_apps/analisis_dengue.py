@@ -1,22 +1,24 @@
 import datetime
 import locale
 
+import dash_bootstrap_components as dbc
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+from dash import dcc, html
+from dash.dependencies import Input, Output
+from dash.exceptions import PreventUpdate
+from django.conf import settings
 from django.db.models import F
+from django_pandas.io import read_frame
+from django_plotly_dash import DjangoDash
 
 from dengue.models import Vector
 from geo.models import Entidad, Municipio
 
 locale.setlocale(locale.LC_TIME, "es_ES")
 
-import dash_bootstrap_components as dbc
-import pandas as pd
-import plotly.express as px
-from dash import dcc, html, dash_table
-from dash.dependencies import Input, Output
-from dash.exceptions import PreventUpdate
-from django.conf import settings
-from django_pandas.io import read_frame
-from django_plotly_dash import DjangoDash
+pio.templates.default = settings.PLOTLY_DEFAULT_THEME
 
 
 # Preparación de datos
@@ -107,36 +109,36 @@ app.layout = dbc.Container(
                 ]
             ),
         dbc.Row(dcc.Graph(id="mapa-vector")),
-        dbc.Row(
-            html.Div(
-                children=[
-                    dash_table.DataTable(
-                        data=[],
-                        id="tabla-vector",
-                        page_size=10,
-                        style_header={
-                            "backgroundColor": "rgb(30, 30, 30)",
-                            "color": "white",
-                            },
-                        style_data={
-                            "backgroundColor": "rgb(50, 50, 50)",
-                            "color": "white",
-                            # 'whiteSpace': 'normal',
-                            "height": "auto",
-                            },
-                        style_cell={
-                            "overflow": "hidden",
-                            "textOverflow": "ellipsis",
-                            # "maxWidth": 0,
-                            },
-                        style_table={
-                            "overflowX": "auto",
-                            "width": "calc(100% - 15px)",
-                            },
-                        )
-                    ]
-                )
-            ),
+        # dbc.Row(
+        #     html.Div(
+        #         children=[
+        #             dash_table.DataTable(
+        #                 data=[],
+        #                 id="tabla-vector",
+        #                 page_size=10,
+        #                 style_header={
+        #                     "backgroundColor": "rgb(30, 30, 30)",
+        #                     "color": "white",
+        #                     },
+        #                 style_data={
+        #                     "backgroundColor": "rgb(50, 50, 50)",
+        #                     "color": "white",
+        #                     # 'whiteSpace': 'normal',
+        #                     "height": "auto",
+        #                     },
+        #                 style_cell={
+        #                     "overflow": "hidden",
+        #                     "textOverflow": "ellipsis",
+        #                     # "maxWidth": 0,
+        #                     },
+        #                 style_table={
+        #                     "overflowX": "auto",
+        #                     "width": "calc(100% - 15px)",
+        #                     },
+        #                 )
+        #             ]
+        #         )
+        #     ),
         dbc.Row(
             [
                 dbc.Col(dcc.Graph(id="grafica-barras-entidad")),
@@ -230,7 +232,6 @@ def prepara_datos(entidades, municipios, fecha_inicial, fecha_final):
                           < (x.month, x.day)
                   )
         )
-    print(geo_df["edad"])
     geo_df["nombre"] = (
             geo_df["ide_nom"] + " " + geo_df["ide_ape_pat"] + " " + geo_df["ide_ape_mat"]
     )
@@ -287,13 +288,14 @@ def mapa(datos, diagnostico):
         color="cve_diag_final",
         width=1500,
         height=600,
-        title="Mapa de casos",
         )
     fig.update_layout(
+        title_text="Mapa de casos",
+        title_x=0.5,
         mapbox_style="dark",
         mapbox_accesstoken=settings.MAPBOX_KEY,
         legend_title_text="Diagnóstico final",
-        margin=dict(l=10, t=50, b=10, r=10),
+        margin=dict(l=10, t=60, b=10, r=10),
         legend=dict(
             font=dict(
                 # size=8,
@@ -317,15 +319,15 @@ def mapa(datos, diagnostico):
     return fig
 
 
-@app.callback(
-    Output("tabla-vector", "data"),
-    Input("datos-procesados", "data"),
-    Input("grafica-barras-dropdown", "value"),
-    )
-def tabla(datos, diagnostico):
-    datos = pd.read_json(datos, orient="split")
-    datos = datos.loc[datos["cve_diag_final"].isin(diagnostico)]
-    return datos.to_dict("records")
+# @app.callback(
+#     Output("tabla-vector", "data"),
+#     Input("datos-procesados", "data"),
+#     Input("grafica-barras-dropdown", "value"),
+#     )
+# def tabla(datos, diagnostico):
+#     datos = pd.read_json(datos, orient="split")
+#     datos = datos.loc[datos["cve_diag_final"].isin(diagnostico)]
+#     return datos.to_dict("records")
 
 
 @app.callback(
@@ -333,10 +335,8 @@ def tabla(datos, diagnostico):
     Input("datos-procesados", "data"),
     Input("grafica-barras-dropdown", "value"),
     )
-def grafica_barras_municipio(datos, diagnostico):
+def grafica_barras_entidad(datos, diagnostico):
     datos = pd.read_json(datos, orient="split")
-    # datos.sort_values("edad", inplace=True)
-    # datos["edad"] = datos["edad"].astype(str)
     datos = datos.loc[datos["cve_diag_final"].isin(diagnostico)]
 
     df_grupo = datos.groupby("entidad").size().reset_index()
@@ -344,22 +344,20 @@ def grafica_barras_municipio(datos, diagnostico):
         columns={0: "Cantidad de casos", "entidad": "Entidad"}, inplace=True
         )
     df_grupo.sort_values("Cantidad de casos", inplace=True)
-    # df_grupo["Edad"] = df_grupo["Edad"].astype(str)
     fig = px.bar(
         df_grupo,
         x="Entidad",
         y="Cantidad de casos",
         color="Entidad",
-        # barmode="stack",
         template="plotly_dark",
-        title="Casos por entidad",
-        # text_auto=True,
-        # labels=dict(cve_diag_final="Diagnóstico", ide_sex="Sexo")
+        text_auto=True,
         )
     fig.update_layout(
+        title_text="Casos por entidad",
+        title_x=0.5,
         showlegend=False,
+        margin=dict(t=60, l=0, r=0, b=0),
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
     return fig
 
 
@@ -370,8 +368,6 @@ def grafica_barras_municipio(datos, diagnostico):
     )
 def grafica_barras_municipio(datos, diagnostico):
     datos = pd.read_json(datos, orient="split")
-    # datos.sort_values("edad", inplace=True)
-    # datos["edad"] = datos["edad"].astype(str)
     datos = datos.loc[datos["cve_diag_final"].isin(diagnostico)]
 
     df_grupo = datos.groupby("municipio").size().reset_index()
@@ -379,22 +375,20 @@ def grafica_barras_municipio(datos, diagnostico):
         columns={0: "Cantidad de casos", "municipio": "Municipio"}, inplace=True
         )
     df_grupo.sort_values("Cantidad de casos", inplace=True, ascending=False)
-    # df_grupo["Edad"] = df_grupo["Edad"].astype(str)
     fig = px.bar(
         df_grupo,
         x="Municipio",
         y="Cantidad de casos",
         color="Municipio",
-        # barmode="stack",
         template="plotly_dark",
-        title="Casos por municipio",
-        # text_auto=True,
-        # labels=dict(cve_diag_final="Diagnóstico", ide_sex="Sexo")
+        text_auto=True,
         )
     fig.update_layout(
+        title="Casos por municipio",
+        title_x=0.5,
         showlegend=False,
+        margin=dict(t=60, l=0, r=0, b=0),
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
     return fig
 
 
@@ -419,16 +413,15 @@ def grafica_diagnostico_barras(datos, diagnostico):
         x="Diagnóstico",
         y="Cantidad de casos",
         color="Diagnóstico",
-        # barmode="stack",
         template="plotly_dark",
-        title="Casos por diagnóstico",
         text_auto=True,
-        # labels=dict(cve_diag_final="Diagnóstico", ide_sex="Sexo")
         )
     fig.update_layout(
+        title="Casos por diagnóstico",
+        title_x=0.5,
         showlegend=False,
+        margin=dict(t=60, l=0, r=0, b=0),
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
     return fig
 
 
@@ -450,16 +443,15 @@ def grafica_diagnostico_sexo(datos, diagnostico):
         x="Sexo",
         y="Cantidad de casos",
         color="Sexo",
-        # barmode="stack",
         template="plotly_dark",
-        title="Casos por sexo",
         text_auto=True,
-        # labels=dict(cve_diag_final="Diagnóstico", ide_sex="Sexo")
         )
     fig.update_layout(
+        title="Casos por sexo",
+        title_x=0.5,
         showlegend=False,
+        margin=dict(t=60, l=0, r=0, b=0),
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
     return fig
 
 
@@ -484,16 +476,15 @@ def grafica_diagnostico_ocupacion(datos, diagnostico):
         x="Cantidad de casos",
         color="Ocupación",
         orientation="h",
-        # barmode="stack",
         template="plotly_dark",
-        title="Casos por ocupación",
         text_auto=True,
-        # labels=dict(cve_diag_final="Diagnóstico", ide_sex="Sexo")
         )
     fig.update_layout(
         showlegend=False,
+        title="Casos por ocupación",
+        title_x=0.5,
+        margin=dict(t=60, l=0, r=0, b=0),
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
     return fig
 
 
@@ -504,10 +495,7 @@ def grafica_diagnostico_ocupacion(datos, diagnostico):
     )
 def grafica_diagnostico_edad(datos, diagnostico):
     datos = pd.read_json(datos, orient="split")
-    # datos.sort_values("edad", inplace=True)
-    # datos["edad"] = datos["edad"].astype(str)
     datos = datos.loc[datos["cve_diag_final"].isin(diagnostico)]
-
     df_grupo = datos.groupby("edad").size().reset_index()
     df_grupo.rename(columns={0: "Cantidad de casos", "edad": "Edad"}, inplace=True)
     df_grupo.sort_values("Edad", inplace=True)
@@ -517,16 +505,15 @@ def grafica_diagnostico_edad(datos, diagnostico):
         x="Edad",
         y="Cantidad de casos",
         color="Edad",
-        # barmode="stack",
         template="plotly_dark",
-        title="Casos por edad",
         text_auto=True,
-        # labels=dict(cve_diag_final="Diagnóstico", ide_sex="Sexo")
         )
     fig.update_layout(
+        title="Casos por edad",
+        title_x=0.5,
         showlegend=False,
+        margin=dict(t=60, l=0, r=0, b=0),
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
     return fig
 
 
@@ -557,13 +544,12 @@ def grafica_diagnostico_sunburst(datos):
         df_grupo,
         path=["Total", "Diagnóstico", "Sexo", "Ocupación"],
         color="Diagnóstico",
-        # names='Sexo',
-        # parents='Diagnóstico',
         values="Cantidad de casos",
         template="plotly_dark",
         branchvalues="total",
-        title="Proporción de casos",
         )
-    fig.update_layout(margin=dict(t=50, l=0, r=0, b=0))
+    fig.update_layout(
+        title="Proporción de casos", title_x=0.5, margin=dict(t=60, l=0, r=0, b=0)
+        )
     fig.update_traces(textinfo="label+percent entry+percent parent")
     return fig

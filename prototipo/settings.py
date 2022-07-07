@@ -145,7 +145,7 @@ INTERNAL_IPS = [
     # ...
     ]
 
-CRS = 4326
+CRS = "EPSG:4326"
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
@@ -183,3 +183,5 @@ PLOTLY_COMPONENTS = [
     ]
 
 MAPBOX_KEY = 'pk.eyJ1IjoibWFyY29qdWxpb2FyZyIsImEiOiJjbDRpeXZqM3Uwa3F6M2RrN2cyMHo3d3BuIn0.5rOOaVbkAGiZeR7KvvlE9Q'
+
+PLOTLY_DEFAULT_THEME = "plotly_dark"
