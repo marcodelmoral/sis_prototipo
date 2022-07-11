@@ -13,35 +13,16 @@ from django.db.models import F
 from django_pandas.io import read_frame
 from django_plotly_dash import DjangoDash
 
+from dengue.dash_apps.utils import diagnosticos_dropdown_barras, entidades_dropdown_opciones, vectores_dropdown_fecha
 from dengue.models import Vector
-from geo.models import Entidad, Municipio
+from geo.models import Municipio
 
 locale.setlocale(locale.LC_TIME, "es_ES")
 
 pio.templates.default = settings.PLOTLY_DEFAULT_THEME
 
-
 # Preparación de datos
 # ==============================================================================
-
-
-def entidades_dropdown_opciones():
-    return [{"label": "Todos", "value": "todos"}] + [
-        {"label": x["nomgeo"], "value": x["cvegeo"]}
-        for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
-        ]
-
-
-def vectores_dropdown_fecha_inicio():
-    return Vector.objects.order_by("fec_sol_aten")[:1][0].fec_sol_aten
-
-
-def vectores_dropdown_fecha_final():
-    return Vector.objects.order_by("-fec_sol_aten")[:1][0].fec_sol_aten
-
-
-def diagnosticos_dropdown_barras():
-    return [{"label": x[1], "value": x[1]} for x in Vector.DIAGNOSTICO]
 
 
 # Declaración de app
@@ -86,12 +67,12 @@ app.layout = dbc.Container(
                         id="rango-fechas",
                         start_date_placeholder_text="Inicio",
                         end_date_placeholder_text="Final",
-                        # calendar_orientation="vertical",
+                        calendar_orientation="vertical",
                         min_date_allowed=datetime.date(2000, 1, 12),
                         max_date_allowed=datetime.date(2040, 1, 12),
                         clearable=True,
-                        start_date=vectores_dropdown_fecha_inicio(),
-                        end_date=vectores_dropdown_fecha_final(),
+                        start_date=vectores_dropdown_fecha(),
+                        end_date=vectores_dropdown_fecha(inicio=False),
                         display_format="D/MMM/YYYY",
                         ),
                     ),
@@ -109,6 +90,11 @@ app.layout = dbc.Container(
                 ]
             ),
         dbc.Row(dcc.Graph(id="mapa-vector")),
+        dbc.Row(
+            [
+                dbc.Col(dcc.Graph(id="grafica-diagnostico-sunburst")),
+                ]
+            ),
         # dbc.Row(
         #     html.Div(
         #         children=[
@@ -171,11 +157,7 @@ app.layout = dbc.Container(
                 dbc.Col(dcc.Graph(id="grafica-diagnostico-edad")),
                 ]
             ),
-        dbc.Row(
-            [
-                dbc.Col(dcc.Graph(id="grafica-diagnostico-sunburst")),
-                ]
-            ),
+
         ],
     fluid=True,
     )

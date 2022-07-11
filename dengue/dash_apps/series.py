@@ -3,9 +3,9 @@ import locale
 
 import dash_bootstrap_components as dbc
 import geopandas as gpd
-# import dpd_components as dpd
 import pandas as pd
 import plotly.express as px
+import plotly.io as pio
 from dash import dcc, html
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
@@ -13,11 +13,13 @@ from django.conf import settings
 from django_pandas.io import read_frame
 from django_plotly_dash import DjangoDash
 
+from dengue.models import DatosAgregados
 from geo.models import Entidad
 from geo.serializers import EntidadSerializer
 
 locale.setlocale(locale.LC_TIME, "es_ES")
-from dengue.models import DatosAgregados
+
+pio.templates.default = settings.PLOTLY_DEFAULT_THEME
 
 dengue_nombre = "dengue_series"
 app = DjangoDash(
