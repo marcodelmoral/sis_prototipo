@@ -40,23 +40,21 @@ def prueba_chi_cuadrada(
     hipotesis_critico = "Independiente (No se rechaza H0)"
 
     if abs(estadistico) >= critico:
-        hipotesis_critico = "Dependientes (Se rechaza H0)"
+        hipotesis_critico = "Dependiente (Se rechaza H0)"
 
     alfa = 1.0 - nivel_significancia
 
     hipotesis_valor_p = "Independiente (No se rechaza H0)"
 
     if valor_p <= alfa:
-        hipotesis_valor_p = "Dependientes (Se rechaza H0)"
+        hipotesis_valor_p = "Dependiente (Se rechaza H0)"
 
     return {
-        "resultados": {
-            "estadistico": estadistico,
-            "valor_p": valor_p,
-            "gdl": gld,
-            "esperado": esperado,
-            "alfa": alfa,
-            },
+        "estadistico": estadistico,
+        "valor_p": valor_p,
+        "gdl": gld,
+        "esperado": esperado,
+        "alfa": alfa,
         "prueba_estadistico": hipotesis_critico,
         "prueba_valor-p": hipotesis_valor_p,
         }

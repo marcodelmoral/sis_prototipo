@@ -14,7 +14,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class Command(BaseCommand):
-    help = "Car"
+    help = "Carga datos de dengue"
 
     def __init__(self, stdout=None, stderr=None, no_color=False, force_color=False):
         super().__init__(stdout, stderr, no_color, force_color)

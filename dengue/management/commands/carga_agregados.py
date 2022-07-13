@@ -80,7 +80,6 @@ class Command(BaseCommand):
         df = df.melt(id_vars=['fecha', 'entidad_id'], value_vars=[1, 2, 3, 4, 5])
         df = df.reset_index()
         df.rename(columns={'index': 'id', 'variable': 'tipo', 'value': 'valor'}, inplace=True)
-        # print(df)
         df.to_sql(
             DatosAgregados._meta.db_table,
             if_exists="append",
