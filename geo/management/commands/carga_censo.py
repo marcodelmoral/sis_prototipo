@@ -8,13 +8,11 @@ import pandas as pd
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import BaseCommand
-from pandas.core.common import SettingWithCopyWarning
 from sqlalchemy import create_engine
 
 from geo.models import Demograficos
 
-warnings.simplefilter(action="ignore", category=FutureWarning)
-warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
+warnings.filterwarnings('ignore')
 
 
 class Command(BaseCommand):
@@ -28,11 +26,18 @@ class Command(BaseCommand):
         host = settings.DATABASES["default"]["HOST"]
         database = settings.DATABASES["default"]["NAME"]
 
-        db_uri = f'postgresql://{username}:{password}@{host}:5432/{database}'
+        db_uri = f"postgresql://{username}:{password}@{host}:5432/{database}"
 
         self.engine = create_engine(db_uri).connect()
 
-        self.columnas = ["object_id", "content_type_id", "fecha", "pobtot", "pobmas", "pobfem"]
+        self.columnas = [
+            "object_id",
+            "content_type_id",
+            "fecha",
+            "pobtot",
+            "pobmas",
+            "pobfem",
+            ]
 
     def add_arguments(self, parser):
         parser.add_argument("origen", type=str, help="Carpeta origen")
@@ -42,40 +47,67 @@ class Command(BaseCommand):
         fecha = datetime.date(fecha, 1, 1)
         origen = pathlib.Path(origen)
 
-        entidad_contenttype_id = ContentType.objects.get(model='entidad').id
-        municipio_contenttype_id = ContentType.objects.get(model='municipio').id
+        entidad_contenttype_id = ContentType.objects.get(model="entidad").id
+        municipio_contenttype_id = ContentType.objects.get(model="municipio").id
+        localidad_contenttype_id = ContentType.objects.get(model="localidad").id
+        manzana_contenttype_id = ContentType.objects.get(model="manzana").id
 
         lista_df = [
             pd.read_csv(archivo, low_memory=False, encoding="utf-8")
             for archivo in origen.glob("*/conjunto_de_datos/*.csv")
             ]
+
         df = pd.concat(lista_df)
+
         df.columns = [columna.lower() for columna in df.columns]
+
+        df = df[df["nom_loc"] != "Total AGEB urbana"]
+
+        df.reset_index(drop=True, inplace=True)
+
+        df["entidad"] = df["entidad"].astype(str).str.zfill(2)
+        df["mun"] = df["mun"].astype(str).str.zfill(3)
+        df['loc'] = df['loc'].astype(str).str.zfill(4)
+        df['mza'] = df['mza'].astype(str).str.zfill(3)
+
         df.replace("*", 0, inplace=True)
-        df['fecha'] = fecha
 
-        # Entidad
-        df_entidades = df[df["nom_loc"].str.contains("Total de la entidad")]
-        df_entidades["object_id"] = df_entidades["entidad"].astype(str).str.zfill(2)
-        df_entidades["content_type_id"] = entidad_contenttype_id
-        df_entidades = df_entidades[self.columnas]
-        df_entidades.reset_index(inplace=True, drop=True)
-        df_entidades.to_sql(Demograficos._meta.db_table, con=self.engine, if_exists="append", index=False)
+        df["fecha"] = fecha
 
-        # Municipio
-        df_municipios = df[df["nom_loc"].str.contains("Total del municipio")]
-        df_municipios["entidad"] = df_municipios["entidad"].astype(str).str.zfill(2)
-        df_municipios["mun"] = df_municipios["mun"].astype(str).str.zfill(3)
-        df_municipios["object_id"] = df_municipios["entidad"] + df_municipios["mun"]
-        df_municipios["content_type_id"] = municipio_contenttype_id
-        df_municipios = df_municipios[self.columnas]
-        df_municipios.reset_index(inplace=True, drop=True)
-        df_municipios.to_sql(Demograficos._meta.db_table, con=self.engine, if_exists="append", index=False)
+        df["object_id"] = None
+        df["content_type_id"] = None
+
+        # Todos
+        df['object_id'].loc[df['nom_loc'] == 'Total de la entidad'] = df["entidad"]
+        df['content_type_id'].loc[df['nom_loc'] == 'Total de la entidad'] = entidad_contenttype_id
+
+        df['object_id'].loc[df['nom_loc'] == 'Total del municipio'] = df["entidad"] + df["mun"]
+        df['content_type_id'].loc[df['nom_loc'] == 'Total del municipio'] = municipio_contenttype_id
+
+        df['object_id'].loc[df['nom_loc'] == 'Total de la localidad urbana'] = df["entidad"] + df["mun"] + df["loc"]
+        df['content_type_id'].loc[df['nom_loc'] == 'Total de la localidad urbana'] = localidad_contenttype_id
+
+        df['object_id'].loc[df['mza'] != "000"] = df["entidad"] + df["mun"] + df["loc"] + df["ageb"] + df["mza"]
+        df['content_type_id'].loc[df['mza'] != "000"] = manzana_contenttype_id
+
+        df = df[self.columnas]
+
+        df.sort_values("object_id", inplace=True)
+
+        df.to_sql(
+            Demograficos._meta.db_table,
+            con=self.engine,
+            index=False,
+            if_exists="append",
+            method="multi",
+            )
 
     def handle(self, *args, **kwargs):
         origen = kwargs["origen"]
-        self.stdout.write(self.style.NOTICE('Cargando censo'))
+        self.stdout.write(self.style.WARNING("Cargando censo"))
         start_time = time.time()
         self.carga_datos(origen)
-        tiempo = time.time() - start_time
-        self.stdout.write(self.style.NOTICE(f'Tiempo transcurrido: {tiempo / 60} minutos'))
+        tiempo = (time.time() - start_time) / 60
+        self.stdout.write(
+            self.style.SUCCESS(f"Tiempo transcurrido: {tiempo:.3f} minutos")
+            )

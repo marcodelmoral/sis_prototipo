@@ -145,7 +145,7 @@ INTERNAL_IPS = [
     # ...
     ]
 
-CRS = "EPSG:4326"
+CRS = 4326
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 

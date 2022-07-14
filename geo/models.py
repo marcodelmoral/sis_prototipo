@@ -9,7 +9,7 @@ class Demograficos(models.Model):
     fecha = models.DateField()
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    object_id = models.CharField(max_length=16)
     content_object = GenericForeignKey()
 
     pobtot = models.PositiveIntegerField(

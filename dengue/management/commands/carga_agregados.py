@@ -1,3 +1,4 @@
+import time
 import warnings
 
 import pandas as pd
@@ -89,5 +90,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         archivo = kwargs["archivo"]
-        self.stdout.write(self.style.NOTICE("Cargando datos"))
+        self.stdout.write(self.style.WARNING("Cargando datos agregados"))
+        start_time = time.time()
         self.carga_datos(archivo)
+        tiempo = (time.time() - start_time) / 60
+        self.stdout.write(
+            self.style.SUCCESS(f"Tiempo transcurrido: {tiempo:.3f} minutos")
+            )
