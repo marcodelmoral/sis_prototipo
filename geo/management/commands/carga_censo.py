@@ -40,7 +40,7 @@ class Command(BaseCommand):
             ]
 
     def add_arguments(self, parser):
-        parser.add_argument("origen", type=str, help="Carpeta origen")
+        parser.add_argument("origen", nargs="?", type=str, help="Carpeta origen", default="data/poblacion/censo2020")
 
     def carga_datos(self, origen: str):
         fecha = int(re.findall(r"\d+", origen.split("/")[-1])[0])

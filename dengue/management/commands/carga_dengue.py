@@ -46,7 +46,8 @@ class Command(BaseCommand):
         self.engine = create_engine(db_uri).connect()
 
     def add_arguments(self, parser):
-        parser.add_argument("archivo", type=str, help="")
+        parser.add_argument("archivo", nargs="?", type=str, help="Archivo con datos de dengue",
+                            default="data/dengue/data_vector.csv")
 
     def carga_datos(self, archivo):
         df = pd.read_csv(archivo, encoding="utf-8", index_col=None, low_memory=False)
@@ -76,10 +77,9 @@ class Command(BaseCommand):
         gdf.to_postgis(
             Vector._meta.db_table, self.engine, if_exists="append", index=False
             )
-        # print(gdf)
 
     def procesa_entidad(self, row):
-        pp = Point(row[0], row[1], srid=4326)
+        pp = Point(row[0], row[1], srid=settings.CRS)
         mun = Municipio.objects.get(geometry__contains=pp)
         return mun.pk
 

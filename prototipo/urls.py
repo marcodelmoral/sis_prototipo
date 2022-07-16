@@ -24,6 +24,8 @@ urlpatterns = [
     path("__debug__/", include(debug_toolbar.urls)),
     path("api/v1/", include(router.urls)),
     path("django_plotly_dash/", include("django_plotly_dash.urls")),
+    path("select2/", include("django_select2.urls")),
     path("", include("core.urls", namespace="core")),
     path("dengue/", include("dengue.urls", namespace="dengue")),
+    path("geo/", include("geo.urls", namespace="geo")),
     ]

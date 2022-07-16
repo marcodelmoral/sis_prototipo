@@ -70,7 +70,8 @@ class Command(BaseCommand):
         self.engine = create_engine(db_uri).connect()
 
     def add_arguments(self, parser):
-        parser.add_argument("archivo", type=str, help="")
+        parser.add_argument("archivo", nargs="?", type=str, help="Archivo de datos agregados",
+                            default="data/agregados/serie_final.csv")
 
     def carga_datos(self, archivo):
         df = pd.read_csv(archivo, index_col=None, low_memory=False, encoding="latin-1")

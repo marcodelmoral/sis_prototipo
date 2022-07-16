@@ -8,11 +8,11 @@ class Vector(models.Model):
 
     DIAGNOSTICO = (
         (1, "Dengue no grave"),
-        # (10, "DENGUE CON SIGNOS DE ALARMA - ENFERMEDAD POR VIRUS ZIKA"),
+        (2, "Dengue con signos de alarma"),
         (3, "Dengue grave"),
+        # (10, "DENGUE CON SIGNOS DE ALARMA - ENFERMEDAD POR VIRUS ZIKA"),
         # (8, "ENFERMEDAD POR VIRUS ZIKA"),
         # (6, "DENGUE CON SIGNOS DE ALARMA - FIEBRE CHIKUNGUNYA"),
-        (2, "Dengue con signos de alarma"),
         # (5, "DENGUE NO GRAVE - FIEBRE CHIKUNGUNYA"),
         )
     fol_id = models.CharField(max_length=255, blank=True, null=True)
@@ -100,7 +100,7 @@ class Vector(models.Model):
         created = self.pk is None
         super(Vector, self).save(*args, **kwargs)
         if created:
-            if self.LOC:
+            if self.geometry:
                 self.retrocodifica()
             else:
                 self.geocodifica()

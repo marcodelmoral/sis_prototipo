@@ -5,16 +5,15 @@
 
     {% plotly_header %}
     {% plotly_message_pipe %}
-    <link rel="stylesheet" type="text/css" href="{% static "dengue/css/main.css" %}"></link>
 {% endblock %}
 
-{% block title %}Análisis de dengue{% endblock %}
+{% block title %}Exploración{% endblock %}
 
 {% block content %}
     <div class="card border-dark">
         <div class="card-body">
-            <div class="{% plotly_class name="analisis_dengue" template_type="div-direct" %}">
-                {% plotly_direct name="analisis_dengue" %}
+            <div class="{% plotly_class name="exploracion_mgn" template_type="div-direct" %}">
+                {% plotly_direct name="exploracion_mgn" %}
             </div>
         </div>
     </div>

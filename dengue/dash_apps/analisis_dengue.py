@@ -21,10 +21,6 @@ locale.setlocale(locale.LC_TIME, "es_ES")
 
 pio.templates.default = settings.PLOTLY_DEFAULT_THEME
 
-# Preparación de datos
-# ==============================================================================
-
-
 # Declaración de app
 # ==============================================================================
 dengue_nombre = "analisis_dengue"
@@ -247,7 +243,7 @@ def prepara_datos(entidades, municipios, fecha_inicial, fecha_final):
 
     for i, ele in enumerate(geo_df.head().to_dict("records")[0].items()):
         print(i, ele)
-    print(geo_df.columns)
+
     return geo_df.to_json(date_format="iso", orient="split")
 
 
