@@ -3,15 +3,28 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from geo.models import (
-    Entidad,
+    Demograficos, Entidad,
     Localidad,
     Manzana,
     Municipio,
     )
 
 
-class EntidadSerializer(GeoFeatureModelSerializer):
+class DemograficosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Demograficos
+        fields = ["pobtot", "pobmas", "pobfem"]
+
+
+class DemograficosRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        serializer = DemograficosSerializer(value)
+        return serializer.data
+
+
+class EntidadGeoSerializer(GeoFeatureModelSerializer):
     """A class to serialize locations as GeoJSON compatible data"""
+    demograficos = DemograficosRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Entidad
@@ -19,10 +32,10 @@ class EntidadSerializer(GeoFeatureModelSerializer):
 
         # you can also explicitly declare which fields you want to include
         # as with a ModelSerializer.
-        fields = ("cvegeo", "nomgeo", "cve_ent")
+        fields = ("cvegeo", "nomgeo", "cve_ent", "demograficos")
 
 
-class MunicipioSerializer(GeoFeatureModelSerializer):
+class MunicipioGeoSerializer(GeoFeatureModelSerializer):
     """A class to serialize locations as GeoJSON compatible data"""
 
     # simplified_geometry = GeometrySerializerMethodField()
@@ -45,7 +58,7 @@ class MunicipioSerializer(GeoFeatureModelSerializer):
         fields = ("cvegeo", "nomgeo", "cve_ent", "cve_mun")
 
 
-class MunicipioCountSerializer(GeoFeatureModelSerializer):
+class MunicipioGeoCountSerializer(GeoFeatureModelSerializer):
     """A class to serialize locations as GeoJSON compatible data"""
 
     # simplified_geometry = GeometrySerializerMethodField()
@@ -70,7 +83,7 @@ class MunicipioCountSerializer(GeoFeatureModelSerializer):
         fields = ("cvegeo", "nomgeo", 'num_casos', 'vector__fec_sol_aten')
 
 
-class LocalidadSerializer(GeoFeatureModelSerializer):
+class LocalidadGeoSerializer(GeoFeatureModelSerializer):
     """A class to serialize locations as GeoJSON compatible data"""
     ambito = serializers.CharField(source='get_ambito_display')
 
@@ -83,7 +96,7 @@ class LocalidadSerializer(GeoFeatureModelSerializer):
         fields = ("id", "cvegeo", "nomgeo", "cve_ent", "cve_mun", "cve_loc", "ambito")
 
 
-class ManzanaSerializer(GeoFeatureModelSerializer):
+class ManzanaGeoSerializer(GeoFeatureModelSerializer):
     """A class to serialize locations as GeoJSON compatible data"""
     ambito = serializers.CharField(source='get_ambito_display')
     tipo = serializers.CharField(source='get_tipo_display')

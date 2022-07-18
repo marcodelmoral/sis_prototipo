@@ -15,7 +15,7 @@ from django_plotly_dash import DjangoDash
 
 from dengue.models import DatosAgregados
 from geo.models import Entidad
-from geo.serializers import EntidadSerializer
+from geo.serializers import EntidadGeoSerializer
 
 locale.setlocale(locale.LC_TIME, "es_ES")
 
@@ -52,7 +52,7 @@ columns_replace = {
     ele: f'{ele} ({"suma" if opt_map[ele] == "sum" else "media"})' for ele in lista_tipo
     }
 
-entidades_geojson = json.dumps(EntidadSerializer(Entidad.objects.all(), many=True).data)
+entidades_geojson = json.dumps(EntidadGeoSerializer(Entidad.objects.all(), many=True).data)
 df_entidades = gpd.read_file(entidades_geojson)
 
 app.layout = dbc.Container(

@@ -31,6 +31,17 @@ def prueba_chi_cuadrada(
         columna_variable_dependiente: str,
         nivel_significancia: float = 0.99,
         ) -> dict:
+    """
+    Prueba de chi cuadrada para verificar la correlación entre dos variables.
+    Args:
+        df:
+        columna_variable_prueba:
+        columna_variable_dependiente:
+        nivel_significancia:
+
+    Returns:
+
+    """
     tabla = pd.crosstab(df[columna_variable_prueba], df[columna_variable_dependiente])
 
     estadistico, valor_p, gld, esperado = chi2_contingency(tabla)

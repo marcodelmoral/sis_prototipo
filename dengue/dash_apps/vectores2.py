@@ -16,9 +16,9 @@ from django_plotly_dash import DjangoDash
 from dengue.models import Vector
 from dengue.serializers import VectorSerializer
 from geo.models import Entidad, Municipio
+
 # Configura
 # =======================================================================
-from geo.serializers import MunicipioCountSerializer, MunicipioSerializer
 
 vector_qs = Vector.objects.all()
 municipios_qs = Municipio.objects.all()
