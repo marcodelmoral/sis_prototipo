@@ -35,10 +35,11 @@
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Dengue</a>
                         <div class="dropdown-menu dropdown-menu-dark">
                             <a href="{% url 'dengue:analisis_dengue' %}" class="dropdown-item">Análisis geoespacial</a>
-                            <a href="{% url 'dengue:series' %}" class="dropdown-item">Series de tiempo</a>
-                            <a href="{% url 'dengue:vectores' %}" class="dropdown-item">Vectores</a>
-                            <div class="dropdown-divider"></div>
-                            <a href="{% url 'dengue:vectores2' %}" class="dropdown-item">Vectores2</a>
+                            <a href="{% url 'dengue:clustering_dengue' %}" class="dropdown-item">Clustering</a>
+                            {#                            <a href="{% url 'dengue:series' %}" class="dropdown-item">Series de tiempo</a>#}
+                            {#                            <a href="{% url 'dengue:vectores' %}" class="dropdown-item">Vectores</a>#}
+                            {#                            <div class="dropdown-divider"></div>#}
+                            {#                            <a href="{% url 'dengue:vectores2' %}" class="dropdown-item">Vectores2</a>#}
                         </div>
                     </li>
                     <li class="nav-item dropdown">
@@ -71,8 +72,8 @@
 </header>
 
 {% block content %}{% endblock %}
-{% block footer %}
-{% endblock %}
+{% block footer %}{% endblock %}
+{% block js %}{% endblock %}
 </body>
 {% block post_body %}{% endblock %}
 </html>

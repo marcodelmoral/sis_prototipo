@@ -7,15 +7,11 @@ import plotly.express as px
 import plotly.io as pio
 from dash import dcc, html
 from dash.dependencies import Input, Output
-from dash.exceptions import PreventUpdate
 from django.conf import settings
-from django.db.models import F
-from django_pandas.io import read_frame
 from django_plotly_dash import DjangoDash
 
-from dengue.dash_apps.utils import diagnosticos_dropdown_barras, entidades_dropdown_opciones, vectores_dropdown_fecha
-from dengue.models import Vector
-from geo.models import Municipio
+from dengue.dash_apps.callbacks import prepara_datos, rellena_municipio
+from dengue.dash_apps.utils import diagnosticos_dropdown, entidades_opciones_dropdown, vectores_fecha_dropdown
 
 locale.setlocale(locale.LC_TIME, "es_ES")
 
@@ -23,9 +19,9 @@ pio.templates.default = settings.PLOTLY_DEFAULT_THEME
 
 # Declaración de app
 # ==============================================================================
-dengue_nombre = "analisis_dengue"
+nombre = "analisis_dengue"
 app = DjangoDash(
-    name=dengue_nombre, serve_locally=True, external_stylesheets=[dbc.themes.DARKLY]
+    name=nombre, serve_locally=True, external_stylesheets=[dbc.themes.DARKLY]
     )
 
 app.layout = dbc.Container(
@@ -47,7 +43,7 @@ app.layout = dbc.Container(
                         placeholder="Selecciona entidades",
                         multi=True,
                         value=["todos"],
-                        options=entidades_dropdown_opciones(),
+                        options=entidades_opciones_dropdown(),
                         ),
                     ),
                 dbc.Col(
@@ -67,8 +63,8 @@ app.layout = dbc.Container(
                         min_date_allowed=datetime.date(2000, 1, 12),
                         max_date_allowed=datetime.date(2040, 1, 12),
                         clearable=True,
-                        start_date=vectores_dropdown_fecha(),
-                        end_date=vectores_dropdown_fecha(inicio=False),
+                        start_date=vectores_fecha_dropdown(),
+                        end_date=vectores_fecha_dropdown(inicio=False),
                         display_format="D/MMM/YYYY",
                         ),
                     ),
@@ -80,8 +76,8 @@ app.layout = dbc.Container(
                     id="grafica-barras-dropdown",
                     placeholder="Selecciona el diagnóstico",
                     multi=True,
-                    value=[x["value"] for x in diagnosticos_dropdown_barras()],
-                    options=diagnosticos_dropdown_barras(),
+                    value=[x["value"] for x in diagnosticos_dropdown()],
+                    options=diagnosticos_dropdown(),
                     )
                 ]
             ),
@@ -166,14 +162,8 @@ app.layout = dbc.Container(
 @app.callback(
     Output("municipios-dropdown", "options"), Input("entidades-dropdown", "value")
     )
-def rellena_municipio_dropdown(entidades):
-    municipios = Municipio.objects.all()
-    if entidades != ["todos"]:
-        municipios = municipios.filter(entidad__in=entidades)
-    lista_municipios = list(municipios.values("cvegeo", "nomgeo"))
-    return [{"label": "Todos", "value": "todos"}] + [
-        {"label": x["nomgeo"], "value": x["cvegeo"]} for x in lista_municipios
-        ]
+def rellena_municipio_callback(entidades):
+    return rellena_municipio(entidades)
 
 
 @app.callback(
@@ -183,68 +173,8 @@ def rellena_municipio_dropdown(entidades):
     Input("rango-fechas", "start_date"),
     Input("rango-fechas", "end_date"),
     )
-def prepara_datos(entidades, municipios, fecha_inicial, fecha_final):
-    vectores = Vector.objects.all().annotate(entidad=F("municipio__entidad__nomgeo"))
-    if municipios is None or entidades is None:
-        raise PreventUpdate
-
-    if entidades != ["todos"]:
-        vectores = vectores.filter(municipio__entidad__cve_ent__in=entidades)
-
-    if municipios != ["todos"]:
-        vectores = vectores.filter(municipio__in=municipios)
-
-    if fecha_inicial is not None and fecha_final is not None:
-        vectores = vectores.filter(fec_sol_aten__range=[fecha_inicial, fecha_final])
-
-    if not vectores:
-        raise PreventUpdate
-
-    geo_df = read_frame(vectores, verbose=True)
-
-    geo_df["edad"] = geo_df["ide_fec_nac"].apply(
-        lambda x: datetime.datetime.today().year
-                  - x.year
-                  - (
-                          (datetime.datetime.today().month, datetime.datetime.today().day)
-                          < (x.month, x.day)
-                  )
-        )
-    geo_df["nombre"] = (
-            geo_df["ide_nom"] + " " + geo_df["ide_ape_pat"] + " " + geo_df["ide_ape_mat"]
-    )
-    geo_df["direccion"] = (
-            geo_df["num_ext"]
-            + " "
-            + geo_df["ide_cal"]
-            + ", "
-            + geo_df["ide_cp"]
-            + ", "
-            + geo_df["ide_col"]
-    )
-    geo_df["lat"] = geo_df["geometry"].apply(lambda x: x.y)
-    geo_df["lon"] = geo_df["geometry"].apply(lambda x: x.x)
-
-    geo_df = geo_df.drop(
-        columns=[
-            "id",
-            "geometry",
-            "ide_nom",
-            "ide_ape_pat",
-            "ide_ape_mat",
-            "ide_cal",
-            "ide_cp",
-            "ide_col",
-            "num_ext",
-            "num_int",
-            ]
-        )
-    geo_df.fillna(" ", inplace=True)
-
-    for i, ele in enumerate(geo_df.head().to_dict("records")[0].items()):
-        print(i, ele)
-
-    return geo_df.to_json(date_format="iso", orient="split")
+def prepara_datos_callback(municipio, entidad, fecha_inicial, fecha_final):
+    return prepara_datos(municipio, entidad, fecha_inicial, fecha_final)
 
 
 @app.callback(

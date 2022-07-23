@@ -16,9 +16,9 @@ from django_plotly_dash import DjangoDash
 from dengue.models import Vector
 from dengue.serializers import VectorSerializer
 from geo.models import Entidad, Municipio
-
 # Configura
 # =======================================================================
+from geo.serializers import MunicipioGeoCountSerializer, MunicipioGeoSerializer
 
 vector_qs = Vector.objects.all()
 municipios_qs = Municipio.objects.all()
@@ -276,7 +276,7 @@ def update_choro(entidad, year, month):
     if not vectores:
         raise PreventUpdate
 
-    geojson = json.dumps(MunicipioSerializer(muns, many=True).data)
+    geojson = json.dumps(MunicipioGeoSerializer(muns, many=True).data)
     gdf = gpd.read_file(geojson)
     gdf.rename(columns={"id": "cvegeo"}, inplace=True)
 
@@ -339,7 +339,7 @@ def update_choroo(entidad):
 
     muns_count = muns.values('cvegeo', 'nomgeo', 'vector__fec_sol_aten', 'geometry').annotate(num_casos=Count('vector'))
 
-    geojson = json.dumps(MunicipioCountSerializer(muns_count, many=True).data)
+    geojson = json.dumps(MunicipioGeoCountSerializer(muns_count, many=True).data)
     gdf = gpd.read_file(geojson)
     print(gdf.columns)
     gdf['num_casos'] = gdf['num_casos'].fillna(0).astype(str)

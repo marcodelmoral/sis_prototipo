@@ -13,19 +13,19 @@ class Demograficos(models.Model):
     content_object = GenericForeignKey()
 
     pobtot = models.PositiveIntegerField(
+        "Población total",
         null=True,
         blank=True,
-        verbose_name="Población total"
         )
     pobmas = models.PositiveIntegerField(
+        "Población masculina",
         null=True,
         blank=True,
-        verbose_name="Población masculina"
         )
     pobfem = models.PositiveIntegerField(
+        "Población femenina",
         null=True,
         blank=True,
-        verbose_name="Población femenina"
         )
 
 
