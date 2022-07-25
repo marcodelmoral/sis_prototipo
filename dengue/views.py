@@ -1,23 +1,26 @@
 from django.views.generic import TemplateView
 
 # noinspection PyUnresolvedReferences
-from dengue.dash_apps import analisis_dengue, clustering_dengue
+from dengue.dash_apps import (
+    analisis_dengue,
+    clustering_dengue,
+    series,
+    series_dengue,
+    vectores,
+    vectores2,
+    )
 
 
-# class SeriesAppView(TemplateView):
-#     template_name = 'dengue/series.html'
-#
-#
-# class VectoresAppView(TemplateView):
-#     template_name = 'dengue/vectores.html'
-#
-#
-# class VectoresAppView2(TemplateView):
-#     template_name = 'dengue/vectores2.html'
-#
-#
-# class AnalisisDengueAppView(TemplateView):
-#     template_name = 'dengue/analisis_dengue.html'
+class SeriesAppView(TemplateView):
+    template_name = "dengue/series.html"
+
+
+class VectoresAppView(TemplateView):
+    template_name = "dengue/vectores.html"
+
+
+class VectoresAppView2(TemplateView):
+    template_name = "dengue/vectores2.html"
 
 
 class DashAppView(TemplateView):
@@ -40,6 +43,11 @@ class AnalisisDengueAppView(DashAppView):
 class ClusteringDengueAppView(DashAppView):
     dash_app = clustering_dengue
     titulo = "Clustering de Dengue"
+
+
+class SeriesDengueAppView(DashAppView):
+    dash_app = series_dengue
+    titulo = "Tablero de datos"
 
 # class SeriesAppView(DashAppView):
 #     dash_app = clustering_dengue

@@ -1,14 +1,14 @@
+import colorsys
 from datetime import date
 
+import matplotlib.colors as mcolors
+import numpy as np
 import pandas as pd
+from matplotlib.colors import LinearSegmentedColormap
 from scipy.stats import chi2, chi2_contingency
 
-from dengue.models import Vector
+from dengue.models import DatosAgregados, Vector
 from geo.models import Entidad
-from matplotlib.colors import LinearSegmentedColormap
-import matplotlib.colors as mcolors
-import colorsys
-import numpy as np
 
 
 def entidades_opciones_dropdown() -> list[dict[str, str]]:
@@ -47,6 +47,25 @@ def diagnosticos_dropdown() -> list[dict[str, str]]:
     return [{"label": x[1], "value": x[1]} for x in Vector.DIAGNOSTICO]
 
 
+def datos_tipo_dropdown() -> list[dict[str, str]]:
+    """
+    Returns:
+    """
+    return [{"label": x[1], "value": x[1]} for x in DatosAgregados.TIPO_DATO]
+
+
+def agregados_fecha_dropdown() -> tuple[date, date]:
+    """
+    Args:
+        inicio:
+    Returns:
+    """
+    return (
+        DatosAgregados.objects.order_by("fecha")[:1][0].fecha,
+        DatosAgregados.objects.order_by("-fecha")[:1][0].fecha,
+        )
+
+
 def prueba_chi_cuadrada(
         df: pd.DataFrame,
         columna_variable_prueba: str,
@@ -64,7 +83,9 @@ def prueba_chi_cuadrada(
     Returns:
 
     """
-    tabla = pd.crosstab(df[columna_variable_prueba], df[columna_variable_dependiente])
+    tabla = pd.crosstab(
+        df[columna_variable_prueba], df[columna_variable_dependiente]
+        )
 
     estadistico, valor_p, gdl, esperado = chi2_contingency(tabla)
 
@@ -163,4 +184,6 @@ def cmap_aleatorio(
             "new_map", randRGBcolors, N=numero_colores
             )
 
-    return [mcolors.rgb2hex(random_colormap(i)) for i in range(random_colormap.N)]
+    return [
+        mcolors.rgb2hex(random_colormap(i)) for i in range(random_colormap.N)
+        ]

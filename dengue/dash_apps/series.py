@@ -49,17 +49,23 @@ opt_map = {
     }
 
 columns_replace = {
-    ele: f'{ele} ({"suma" if opt_map[ele] == "sum" else "media"})' for ele in lista_tipo
+    ele: f'{ele} ({"suma" if opt_map[ele] == "sum" else "media"})'
+    for ele in lista_tipo
     }
 
-entidades_geojson = json.dumps(EntidadGeoSerializer(Entidad.objects.all(), many=True).data)
+entidades_geojson = json.dumps(
+    EntidadGeoSerializer(Entidad.objects.all(), many=True).data
+    )
 df_entidades = gpd.read_file(entidades_geojson)
 
 app.layout = dbc.Container(
     [
         dbc.Row(
             dbc.Col(
-                html.H1("Series de tiempo", className="text-center text-primary mb-4"),
+                html.H1(
+                    "Series de tiempo",
+                    className="text-center text-primary mb-4",
+                    ),
                 width=12,
                 )
             ),
@@ -81,7 +87,9 @@ app.layout = dbc.Container(
                             id="tipo-1",
                             multi=True,
                             value=[lista_tipo[0]],
-                            options=[{"label": x, "value": x} for x in lista_tipo],
+                            options=[
+                                {"label": x, "value": x} for x in lista_tipo
+                                ],
                             ),
                         # dcc.Graph(id="line-fig2", figure={}),
                         dcc.Graph(id="fig-1", figure={}),
@@ -117,7 +125,10 @@ app.layout = dbc.Container(
                         multi=True,
                         value=[lista_entidades[0]],
                         options=[{"label": "Todos", "value": "todos"}]
-                                + [{"label": x, "value": x} for x in sorted(lista_entidades)],
+                                + [
+                                    {"label": x, "value": x}
+                                    for x in sorted(lista_entidades)
+                                    ],
                         ),
                     dcc.Dropdown(
                         id="tipo-3",
@@ -146,7 +157,8 @@ app.layout = dbc.Container(
                                         for x in reversed(
                                     list(
                                         range(
-                                            df.fecha.min().year, df.fecha.max().year + 1
+                                            df.fecha.min().year,
+                                            df.fecha.max().year + 1,
                                             )
                                         )
                                     )
@@ -175,7 +187,8 @@ app.layout = dbc.Container(
                         multi=False,
                         value=lista_entidades[0],
                         options=[
-                            {"label": x, "value": x} for x in sorted(lista_entidades)
+                            {"label": x, "value": x}
+                            for x in sorted(lista_entidades)
                             ],
                         ),
                     dcc.Dropdown(
@@ -196,7 +209,8 @@ app.layout = dbc.Container(
                         multi=False,
                         value=lista_entidades[0],
                         options=[
-                            {"label": x, "value": x} for x in sorted(lista_entidades)
+                            {"label": x, "value": x}
+                            for x in sorted(lista_entidades)
                             ],
                         ),
                     dcc.Dropdown(
@@ -217,7 +231,8 @@ app.layout = dbc.Container(
                         multi=False,
                         value=lista_entidades[0],
                         options=[
-                            {"label": x, "value": x} for x in sorted(lista_entidades)
+                            {"label": x, "value": x}
+                            for x in sorted(lista_entidades)
                             ],
                         ),
                     dcc.Dropdown(
@@ -263,10 +278,27 @@ def update_graph1(entidad1, tipo1):
             rangeselector=dict(
                 buttons=list(
                     [
-                        dict(count=1, label="1m", step="month", stepmode="backward"),
-                        dict(count=6, label="6m", step="month", stepmode="backward"),
-                        dict(count=1, label="YTD", step="year", stepmode="todate"),
-                        dict(count=1, label="1y", step="year", stepmode="backward"),
+                        dict(
+                            count=1,
+                            label="1m",
+                            step="month",
+                            stepmode="backward",
+                            ),
+                        dict(
+                            count=6,
+                            label="6m",
+                            step="month",
+                            stepmode="backward",
+                            ),
+                        dict(
+                            count=1, label="YTD", step="year", stepmode="todate"
+                            ),
+                        dict(
+                            count=1,
+                            label="1y",
+                            step="year",
+                            stepmode="backward",
+                            ),
                         dict(step="all"),
                         ]
                     )
@@ -290,7 +322,9 @@ def update_graph2(tipo2):
 
     data = df_totales.groupby("year").agg(opt_map).reset_index()
     data.rename(columns=columns_replace, inplace=True)
-    dff_totales = data.melt(id_vars="year", value_vars=list(columns_replace.values()))
+    dff_totales = data.melt(
+        id_vars="year", value_vars=list(columns_replace.values())
+        )
     dff_totales = dff_totales[dff_totales["tipo"].isin(tipo2)]
     fig = px.line(
         dff_totales,
@@ -329,7 +363,9 @@ def update_graph3(entidad2, tipo3):
     df_totales_entidades["year"] = [d.year for d in df_totales_entidades.fecha]
 
     data_entidades = (
-        df_totales_entidades.groupby(["year", "entidad"]).agg(opt_map).reset_index()
+        df_totales_entidades.groupby(["year", "entidad"])
+        .agg(opt_map)
+        .reset_index()
     )
     data_entidades.rename(columns=columns_replace, inplace=True)
     dff_entidades = data_entidades.melt(
@@ -369,11 +405,15 @@ def update_graph_bar(year):
     if year != "todos":
         df_bar = df_bar[df_bar["fecha"] == year]
 
-    group = df_bar.groupby("entidad")["casos"].sum().sort_values(ascending=False)
+    group = (
+        df_bar.groupby("entidad")["casos"].sum().sort_values(ascending=False)
+    )
 
-    df_bubble = gpd.GeoDataFrame(pd.merge(df_entidades_bar, group, on="entidad"))
-    df_bubble['geometry'] = df_bubble['geometry'].centroid
-    df_bubble.sort_values(by='casos', ascending=False, inplace=True)
+    df_bubble = gpd.GeoDataFrame(
+        pd.merge(df_entidades_bar, group, on="entidad")
+        )
+    df_bubble["geometry"] = df_bubble["geometry"].centroid
+    df_bubble.sort_values(by="casos", ascending=False, inplace=True)
     fig_bar = px.bar(
         group.reset_index(),
         x="entidad",
@@ -385,7 +425,10 @@ def update_graph_bar(year):
         showlegend=False,
         )
     fig_pie = px.pie(
-        group.reset_index(), values="casos", names="entidad", template="plotly_dark"
+        group.reset_index(),
+        values="casos",
+        names="entidad",
+        template="plotly_dark",
         )
     fig_pie.update_traces(textposition="inside", textinfo="percent+label")
     fig_pie.update_layout(
@@ -400,7 +443,11 @@ def update_graph_bar(year):
         size="casos",
         template="plotly_dark",
         )
-    fig_bubble.update_layout(mapbox_style="dark", mapbox_accesstoken=settings.MAPBOX_KEY, showlegend=False)
+    fig_bubble.update_layout(
+        mapbox_style="dark",
+        mapbox_accesstoken=settings.MAPBOX_KEY,
+        showlegend=False,
+        )
     # fig_bubble.update_traces(marker_line_width=0)
     fig_bubble.update_geos(fitbounds="locations")
     return fig_bar, fig_pie, fig_bubble

@@ -96,15 +96,15 @@ class Vector(models.Model):
     # def geojson_vector(self):
     #     return serialize("geojson", [self], geometry_field="LOC")
 
-    def save(self, *args, **kwargs):
-        created = self.pk is None
-        super(Vector, self).save(*args, **kwargs)
-        if created:
-            if self.geometry:
-                self.retrocodifica()
-            else:
-                self.geocodifica()
-            self.embarazada_cercana()
+    # def save(self, *args, **kwargs):
+    #     created = self.pk is None
+    #     super(Vector, self).save(*args, **kwargs)
+    #     if created:
+    #         if self.geometry:
+    #             self.retrocodifica()
+    #         else:
+    #             self.geocodifica()
+    #         self.embarazada_cercana()
 
     # def get_absolute_url(self):
     #     return reverse('geo:vectores', kwargs={'pk': self.pk})

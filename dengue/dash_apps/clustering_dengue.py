@@ -106,6 +106,8 @@ def rellena_municipio_callback(entidades):
     Input("rango-fechas", "end_date"),
     )
 def prepara_datos_callback(municipio, entidad, fecha_inicial, fecha_final):
+    # TODO: Creo que se puede mejorar para que se descarguen los datos al cargar la pagina y no cada vez que se
+    #  aplica el dropdown
     return prepara_datos(municipio, entidad, fecha_inicial, fecha_final)
 
 
