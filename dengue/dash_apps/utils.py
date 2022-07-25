@@ -54,16 +54,19 @@ def datos_tipo_dropdown() -> list[dict[str, str]]:
     return [{"label": x[1], "value": x[1]} for x in DatosAgregados.TIPO_DATO]
 
 
-def agregados_fecha_dropdown() -> tuple[date, date]:
+def agregados_fecha_dropdown(inicio: bool = True) -> date:
     """
+
     Args:
         inicio:
+
     Returns:
+
     """
-    return (
-        DatosAgregados.objects.order_by("fecha")[:1][0].fecha,
-        DatosAgregados.objects.order_by("-fecha")[:1][0].fecha,
-        )
+    if inicio:
+        return DatosAgregados.objects.order_by("fecha")[:1][0].fecha
+    else:
+        return DatosAgregados.objects.order_by("-fecha")[:1][0].fecha
 
 
 def prueba_chi_cuadrada(
