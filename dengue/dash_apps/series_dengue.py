@@ -415,7 +415,7 @@ def serie_estados_callback(datos, tipos):
 def serie_agregados_callback(datos, tipos, periodo):
     # TODO: ver si se pueden agregar por mes
     if periodo == "mes":
-        periodo = ["año", "mes"]
+        periodo = "fecha"
 
     datos = pd.read_json(datos, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
@@ -425,7 +425,7 @@ def serie_agregados_callback(datos, tipos, periodo):
         values="valor", index=["fecha", "año", "mes", "entidad"], columns=["tipo"]
         ).reset_index()
 
-    datos_totales = datos.groupby(periodo).agg(OPT_MAP).reset_index()
+    datos_totales = datos.groupby("fecha").agg(OPT_MAP).reset_index()
 
     columnas = {
         ele[1]: f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})'
@@ -433,25 +433,26 @@ def serie_agregados_callback(datos, tipos, periodo):
         }
     datos_totales.rename(columns=columnas, inplace=True)
     datos_totales = datos_totales.melt(
-        id_vars=periodo, value_vars=list(columnas.values())
+        id_vars="fecha", value_vars=list(columnas.values())
         )
     datos_totales["entidad"] = "Agregados"
     # datos_totales = datos_totales[datos_totales["tipo"].isin(tipos)]
 
     datos_entidades = (
-        datos.groupby(periodo + ["entidad"] if periodo == ["año", "mes"] else periodo)
+        datos.groupby(["fecha", "entidad"])
         .agg(OPT_MAP)
         .reset_index()
     )
     datos_entidades.rename(columns=columnas, inplace=True)
     datos_entidades = datos_entidades.melt(
-        id_vars=periodo + ["entidad"] if periodo == ["año", "mes"] else periodo, value_vars=list(columnas.values())
+        id_vars=["fecha", "entidad"], value_vars=list(columnas.values())
         )
     datos = pd.concat([datos_entidades, datos_totales], axis=0)
+    print(datos)
     datos = datos[datos["tipo"].isin(tipos)]
     fig = px.line(
         datos,
-        x="mes" if periodo == ["año", "mes"] else "año",
+        x="fecha",
         y="value",
         color="entidad",
         line_dash="tipo",
