@@ -10,17 +10,33 @@ from scipy.stats import chi2, chi2_contingency
 from dengue.models import DatosAgregados, Vector
 from geo.models import Entidad
 
+OPT_MAP = {
+    "Número de casos": "sum",
+    "Precipitación": "mean",
+    "Temperatura máxima": "mean",
+    "Temperatura mínima": "mean",
+    "Temperatura promedio": "mean",
+    }
 
-def entidades_opciones_dropdown() -> list[dict[str, str]]:
+
+def entidades_opciones_dropdown(resolver_valor: bool = False) -> list[dict[str, str]]:
     """
 
     Returns:
 
     """
-    return [{"label": "Todos", "value": "todos"}] + [
-        {"label": x["nomgeo"], "value": x["cvegeo"]}
-        for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
-        ]
+
+    if resolver_valor:
+        entidades = [
+            {"label": x["nomgeo"], "value": x["nomgeo"]}
+            for x in list(Entidad.objects.values("nomgeo"))
+            ]
+    else:
+        entidades = [
+            {"label": x["nomgeo"], "value": x["cvegeo"]}
+            for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
+            ]
+    return [{"label": "Todos", "value": "todos"}] + entidades
 
 
 def vectores_fecha_dropdown(inicio: bool = True) -> date:
@@ -47,13 +63,6 @@ def diagnosticos_dropdown() -> list[dict[str, str]]:
     return [{"label": x[1], "value": x[1]} for x in Vector.DIAGNOSTICO]
 
 
-def datos_tipo_dropdown() -> list[dict[str, str]]:
-    """
-    Returns:
-    """
-    return [{"label": x[1], "value": x[1]} for x in DatosAgregados.TIPO_DATO]
-
-
 def agregados_fecha_dropdown(inicio: bool = True) -> date:
     """
 
@@ -67,6 +76,22 @@ def agregados_fecha_dropdown(inicio: bool = True) -> date:
         return DatosAgregados.objects.order_by("fecha")[:1][0].fecha
     else:
         return DatosAgregados.objects.order_by("-fecha")[:1][0].fecha
+
+
+def datos_agregados_tipo_dropdown(agregados=False) -> list[dict[str, str]]:
+    """
+    Returns:
+    """
+
+    if agregados:
+        return [
+            {
+                "label": f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})',
+                "value": f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})',
+                }
+            for ele in DatosAgregados.TIPO_DATO
+            ]
+    return [{"label": x[1], "value": x[1]} for x in DatosAgregados.TIPO_DATO]
 
 
 def prueba_chi_cuadrada(
@@ -86,9 +111,7 @@ def prueba_chi_cuadrada(
     Returns:
 
     """
-    tabla = pd.crosstab(
-        df[columna_variable_prueba], df[columna_variable_dependiente]
-        )
+    tabla = pd.crosstab(df[columna_variable_prueba], df[columna_variable_dependiente])
 
     estadistico, valor_p, gdl, esperado = chi2_contingency(tabla)
 
@@ -187,6 +210,4 @@ def cmap_aleatorio(
             "new_map", randRGBcolors, N=numero_colores
             )
 
-    return [
-        mcolors.rgb2hex(random_colormap(i)) for i in range(random_colormap.N)
-        ]
+    return [mcolors.rgb2hex(random_colormap(i)) for i in range(random_colormap.N)]

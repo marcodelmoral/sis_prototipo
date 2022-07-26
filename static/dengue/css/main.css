@@ -84,13 +84,8 @@
 /*    color: white;*/
 /*}*/
 
-/*.has-value.Select--single > .Select-control .Select-value .Select-value-label, .has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label {*/
-/*    color: #ffffff;*/
-/*}*/
-
-.DateInput_input {
-    background-color: black;
-    color: #aaa;
+.has-value.Select--single > .Select-control .Select-value .Select-value-label, .has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label {
+    color: #ffffff;
 }
 
 
@@ -98,3 +93,11 @@
     background-color: black;
     border-color: black;
 }
+
+/*element.style {*/
+/*    stroke: rgb(238, 238, 238);*/
+/*    stroke-opacity: 1;*/
+/*    fill: rgb(68, 68, 68);*/
+/*    fill-opacity: 1;*/
+/*    stroke-width: 0px;*/
+/*}*/
