@@ -11,7 +11,11 @@ from django.conf import settings
 from django_plotly_dash import DjangoDash
 
 from dengue.dash_apps.callbacks import prepara_datos, rellena_municipio
-from dengue.dash_apps.utils import diagnosticos_dropdown, entidades_opciones_dropdown, vectores_fecha_dropdown
+from dengue.dash_apps.utils import (
+    diagnosticos_dropdown,
+    entidades_opciones_dropdown,
+    vectores_fecha_dropdown,
+    )
 
 locale.setlocale(locale.LC_TIME, "es_ES")
 
@@ -81,10 +85,20 @@ app.layout = dbc.Container(
                     )
                 ]
             ),
-        dbc.Row(dcc.Graph(id="mapa-vector")),
+        dbc.Row(
+            dcc.Loading(
+                dcc.Graph(id="mapa-vector"),
+                type="cube",
+                )
+            ),
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="grafica-diagnostico-sunburst")),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-diagnostico-sunburst"),
+                        type="cube",
+                        )
+                    ),
                 ]
             ),
         # dbc.Row(
@@ -119,12 +133,22 @@ app.layout = dbc.Container(
         #     ),
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="grafica-barras-entidad")),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-barras-entidad"),
+                        type="cube",
+                        )
+                    ),
                 ]
             ),
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="grafica-barras-municipio")),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-barras-municipio"),
+                        type="cube",
+                        )
+                    ),
                 ]
             ),
         dbc.Row(
@@ -135,21 +159,40 @@ app.layout = dbc.Container(
             ),
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="grafica-diagnostico")),
-                dbc.Col(dcc.Graph(id="grafica-diagnostico-sexo")),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-diagnostico"),
+                        type="cube",
+                        )
+                    ),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-diagnostico-sexo"),
+                        type="cube",
+                        )
+                    ),
                 ]
             ),
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="grafica-diagnostico-ocupacion")),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-diagnostico-ocupacion"),
+                        type="cube",
+                        )
+                    ),
                 ]
             ),
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="grafica-diagnostico-edad")),
+                dbc.Col(
+                    dcc.Loading(
+                        dcc.Graph(id="grafica-diagnostico-edad"),
+                        type="cube",
+                        )
+                    ),
                 ]
             ),
-
         ],
     fluid=True,
     )

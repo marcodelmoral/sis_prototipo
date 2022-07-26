@@ -6,7 +6,6 @@ import dash_bootstrap_components as dbc
 import geopandas as gpd
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import plotly.io as pio
 from dash import dcc, html
 from dash.dependencies import Input, Output
@@ -15,8 +14,10 @@ from django_pandas.io import read_frame
 from django_plotly_dash import DjangoDash
 
 from dengue.dash_apps.utils import (
-    OPT_MAP, agregados_fecha_dropdown,
+    OPT_MAP,
+    agregados_fecha_dropdown,
     datos_agregados_tipo_dropdown,
+    entidades_opciones_dropdown, mapa_init,
     )
 from dengue.models import DatosAgregados
 from geo.models import Entidad
@@ -30,24 +31,6 @@ nombre = "series_dengue"
 app = DjangoDash(
     name=nombre, serve_locally=True, external_stylesheets=[dbc.themes.DARKLY]
     )
-
-
-def mapa_init():
-    fig = go.Figure()
-    fig.add_trace(go.Scattermapbox())
-    fig.update_layout(
-        mapbox=dict(
-            accesstoken=settings.MAPBOX_KEY,
-            zoom=5,
-            center=dict(lat=20.31296, lon=-99.5364),
-            style="dark",
-            ),
-        title_text="Mapa de casos",
-        title_x=0.5,
-        margin=dict(l=10, t=60, b=10, r=10),
-        )
-    return fig
-
 
 app.layout = dbc.Container(
     [
@@ -107,7 +90,11 @@ app.layout = dbc.Container(
                             type="cube",
                             ),
                         ]
-                    ),
+                    )
+                ]
+            ),
+        dbc.Row(
+            [
                 dbc.Col(
                     [
                         dcc.Loading(dcc.Graph(id="fig-barras", figure={}), type="cube"),
@@ -126,15 +113,6 @@ app.layout = dbc.Container(
             ),
         dbc.Row(
             [
-                # dbc.Col(
-                #     dcc.Dropdown(
-                #         id="entidades-dropdown",
-                #         placeholder="Selecciona una entidad",
-                #         multi=True,
-                #         value=["todos"],
-                #         options=entidades_opciones_dropdown(resolver_valor=True),
-                #         ),
-                #     ),
                 dbc.Col(
                     dcc.Dropdown(
                         id="tipo-dropdown",
@@ -179,7 +157,10 @@ app.layout = dbc.Container(
                         placeholder="Selecciona una periodo",
                         multi=False,
                         value="año",
-                        options=[{"label": "Por año", "value": "año"}, {"label": "Por mes", "value": "mes"}]
+                        options=[
+                            {"label": "Por año", "value": "año"},
+                            {"label": "Por mes", "value": "mes"},
+                            ],
                         )
                     ),
                 ]
@@ -188,7 +169,72 @@ app.layout = dbc.Container(
             [
                 dbc.Col(
                     [
-                        dcc.Loading(dcc.Graph(id="fig-series-agregados", figure={}), type="cube"),
+                        dcc.Loading(
+                            dcc.Graph(id="fig-series-agregados", figure={}), type="cube"
+                            ),
+                        ]
+                    ),
+                ]
+            ),
+        dbc.Row([
+            dbc.Col(
+                [
+                    dcc.Dropdown(
+                        id="entidad-estacionalidad-dropdown",
+                        multi=False,
+                        value=entidades_opciones_dropdown(resolver_valor=True, todos=False)[0][
+                            "value"
+                        ],
+                        options=entidades_opciones_dropdown(resolver_valor=True, todos=False),
+                        )
+                    ]
+                ),
+            dbc.Col(
+                [
+                    dcc.Dropdown(
+                        id="tipo-estacionalidad-dropdown",
+                        multi=False,
+                        value=[
+                            x["value"]
+                            for x in datos_agregados_tipo_dropdown(agregados=False)
+                            ][0],
+                        options=datos_agregados_tipo_dropdown(agregados=False),
+                        ),
+                    ]
+                ),
+            ]),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dcc.Loading(
+                            dcc.Graph(id="fig-series-estacionalidad-estado", figure={}),
+                            type="cube",
+                            ),
+                        ]
+                    ),
+                ]
+            ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dcc.Loading(
+                            dcc.Graph(id="fig-barras-estacionalidad-estado", figure={}),
+                            type="cube",
+                            ),
+                        ]
+                    ),
+                ]
+            ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dcc.Loading(
+                            dcc.Graph(id="fig-barras-estacionalidad-estado-año", figure={}),
+                            type="cube",
+                            ),
                         ]
                     ),
                 ]
@@ -216,7 +262,6 @@ def prepara_datos_callback(_):
     Output("fig-barras", "figure"),
     Input("datos-procesados", "data"),
     Input("ano-dropdown", "value"),
-    # Input("mes-dropdown", "value"),
     )
 def mapa_burbujas_callback(datos, ano):
     # TODO: Agregar porcentajes a la grafica de barras o animar un grafico de pastel
@@ -271,7 +316,7 @@ def mapa_burbujas_callback(datos, ano):
             mapbox_accesstoken=settings.MAPBOX_KEY,
             title_text="Mapa de burbujas para casos",
             title_x=0.5,
-            showlegend=False,
+            # showlegend=False,
             )
 
         fig_mapa_burbujas.update_geos(fitbounds="locations")
@@ -348,7 +393,6 @@ def mapa_burbujas_callback(datos, ano):
 @app.callback(
     Output("fig-series", "figure"),
     Input("datos-procesados", "data"),
-    # Input("entidades-dropdown", "value"),
     Input("tipo-dropdown", "value"),
     )
 def serie_estados_callback(datos, tipos):
@@ -410,22 +454,22 @@ def serie_estados_callback(datos, tipos):
     Output("fig-series-agregados", "figure"),
     Input("datos-procesados", "data"),
     Input("tipo-agregados-dropdown", "value"),
-    Input("periodo-dropdown", "value")
+    Input("periodo-dropdown", "value"),
     )
 def serie_agregados_callback(datos, tipos, periodo):
-    # TODO: ver si se pueden agregar por mes
+    # TODO: por es es igual que el grafico anterior, agregar agregados a la grafica anterior
     if periodo == "mes":
         periodo = "fecha"
 
     datos = pd.read_json(datos, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
-    datos.sort_values(by=["fecha", "entidad"], inplace=True)
+    datos.sort_values(by=[periodo, "entidad"], inplace=True)
 
     datos = datos.pivot_table(
         values="valor", index=["fecha", "año", "mes", "entidad"], columns=["tipo"]
         ).reset_index()
 
-    datos_totales = datos.groupby("fecha").agg(OPT_MAP).reset_index()
+    datos_totales = datos.groupby(periodo).agg(OPT_MAP).reset_index()
 
     columnas = {
         ele[1]: f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})'
@@ -433,26 +477,20 @@ def serie_agregados_callback(datos, tipos, periodo):
         }
     datos_totales.rename(columns=columnas, inplace=True)
     datos_totales = datos_totales.melt(
-        id_vars="fecha", value_vars=list(columnas.values())
+        id_vars=periodo, value_vars=list(columnas.values())
         )
     datos_totales["entidad"] = "Agregados"
-    # datos_totales = datos_totales[datos_totales["tipo"].isin(tipos)]
 
-    datos_entidades = (
-        datos.groupby(["fecha", "entidad"])
-        .agg(OPT_MAP)
-        .reset_index()
-    )
+    datos_entidades = datos.groupby([periodo, "entidad"]).agg(OPT_MAP).reset_index()
     datos_entidades.rename(columns=columnas, inplace=True)
     datos_entidades = datos_entidades.melt(
-        id_vars=["fecha", "entidad"], value_vars=list(columnas.values())
+        id_vars=[periodo, "entidad"], value_vars=list(columnas.values())
         )
     datos = pd.concat([datos_entidades, datos_totales], axis=0)
-    print(datos)
     datos = datos[datos["tipo"].isin(tipos)]
     fig = px.line(
         datos,
-        x="fecha",
+        x=periodo,
         y="value",
         color="entidad",
         line_dash="tipo",
@@ -497,3 +535,70 @@ def serie_agregados_callback(datos, tipos, periodo):
         )
 
     return fig
+
+
+@app.callback(
+    Output("fig-series-estacionalidad-estado", "figure"),
+    Output("fig-barras-estacionalidad-estado", "figure"),
+    Output("fig-barras-estacionalidad-estado-año", "figure"),
+    Input("datos-procesados", "data"),
+    Input("entidad-estacionalidad-dropdown", "value"),
+    Input("tipo-estacionalidad-dropdown", "value"),
+    )
+def serie_agregados_callback(datos, entidad, tipo):
+    datos = pd.read_json(datos, orient="split")
+    datos["fecha"] = pd.to_datetime(datos["fecha"])
+    datos.sort_values(by=["año", "entidad"], inplace=True, ascending=False)
+    datos = datos[datos["entidad"] == entidad]
+
+    datos = datos[datos["tipo"] == tipo]
+
+    datos["mes"] = datos["mes"].apply(lambda x: calendar.month_name[x].capitalize())
+    fig_estacionalidad_mes = px.line(
+        datos,
+        x="mes",
+        y="valor",
+        color="año",
+        template="plotly_dark",
+        )
+    fig_estacionalidad_mes.update_layout(
+        title_text="Serie de estacionalidad por mes",
+        title_x=0.5,
+        xaxis_title="Mes",
+        yaxis_title="Valor"
+        )
+
+    fig_barras_mes = px.box(
+        datos,
+        x="mes",
+        y="valor",
+        boxmode="overlay",
+        color="mes",
+        template="plotly_dark",
+        )
+    fig_barras_mes.update_layout(
+        showlegend=False,
+        title_text="Gráfico de caja para estacionalidad por mes",
+        title_x=0.5,
+        xaxis_title="Mes",
+        yaxis_title="Valor"
+        )
+
+    fig_barras_ano = px.box(
+        datos,
+        x="año",
+        y="valor",
+        boxmode="overlay",
+        color="año",
+        template="plotly_dark",
+        )
+    fig_barras_ano.update_layout(
+        showlegend=False,
+        title_text="Gráfico de caja para estacionalidad por año",
+        title_x=0.5,
+        xaxis_title="Año",
+        yaxis_title="Valor",
+        xaxis=dict(tickmode="linear")
+        )
+
+    return fig_estacionalidad_mes, fig_barras_mes, fig_barras_ano

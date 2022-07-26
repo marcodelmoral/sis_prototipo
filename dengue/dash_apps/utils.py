@@ -4,11 +4,13 @@ from datetime import date
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.stats import chi2, chi2_contingency
 
 from dengue.models import DatosAgregados, Vector
 from geo.models import Entidad
+from prototipo import settings
 
 OPT_MAP = {
     "Número de casos": "sum",
@@ -19,9 +21,9 @@ OPT_MAP = {
     }
 
 
-def entidades_opciones_dropdown(resolver_valor: bool = False) -> list[dict[str, str]]:
+def entidades_opciones_dropdown(resolver_valor: bool = False, todos=True) -> list[dict[str, str]]:
     """
-
+    TODO: mejorar
     Returns:
 
     """
@@ -36,7 +38,9 @@ def entidades_opciones_dropdown(resolver_valor: bool = False) -> list[dict[str, 
             {"label": x["nomgeo"], "value": x["cvegeo"]}
             for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
             ]
-    return [{"label": "Todos", "value": "todos"}] + entidades
+    if todos:
+        return [{"label": "Todos", "value": "todos"}] + entidades
+    return entidades
 
 
 def vectores_fecha_dropdown(inicio: bool = True) -> date:
@@ -80,6 +84,7 @@ def agregados_fecha_dropdown(inicio: bool = True) -> date:
 
 def datos_agregados_tipo_dropdown(agregados=False) -> list[dict[str, str]]:
     """
+    TODO: mejorar
     Returns:
     """
 
@@ -211,3 +216,20 @@ def cmap_aleatorio(
             )
 
     return [mcolors.rgb2hex(random_colormap(i)) for i in range(random_colormap.N)]
+
+
+def mapa_init():
+    fig = go.Figure()
+    fig.add_trace(go.Scattermapbox())
+    fig.update_layout(
+        mapbox=dict(
+            accesstoken=settings.MAPBOX_KEY,
+            zoom=5,
+            center=dict(lat=20.31296, lon=-99.5364),
+            style="dark",
+            ),
+        # title_text="Mapa de casos",
+        # title_x=0.5,
+        margin=dict(l=10, t=60, b=10, r=10),
+        )
+    return fig

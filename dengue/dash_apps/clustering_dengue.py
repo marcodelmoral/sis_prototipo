@@ -14,7 +14,11 @@ from django_plotly_dash import DjangoDash
 from sklearn.cluster import DBSCAN
 
 from dengue.dash_apps.callbacks import prepara_datos, rellena_municipio
-from dengue.dash_apps.utils import (cmap_aleatorio, entidades_opciones_dropdown, vectores_fecha_dropdown)
+from dengue.dash_apps.utils import (
+    cmap_aleatorio,
+    entidades_opciones_dropdown,
+    mapa_init, vectores_fecha_dropdown,
+    )
 
 locale.setlocale(locale.LC_TIME, "es_ES")
 
@@ -81,7 +85,12 @@ app.layout = dbc.Container(
                 dcc.Slider(2, 10, 1, value=2, id="muestras-slider"),
                 ]
             ),
-        dbc.Row(dcc.Graph(id="mapa-vector")),
+        dbc.Row(
+            dcc.Loading(
+                dcc.Graph(id="mapa-vector", figure=mapa_init()),
+                type="cube",
+                )
+            ),
         ],
     fluid=True,
     )
@@ -129,7 +138,7 @@ def mapa(datos, distancia, numero_muestras):
     coords = datos[["lat", "lon"]].values
 
     modelo = DBSCAN(
-        eps=distancia / 6371.,
+        eps=distancia / 6371.0,
         min_samples=numero_muestras,
         algorithm="ball_tree",
         metric="haversine",
@@ -162,10 +171,10 @@ def mapa(datos, distancia, numero_muestras):
         color_discrete_map=dict(zip(datos["grupo"].unique(), cmap)),
         hover_data=columnas_hover_data,
         template="plotly_dark",
-        color="cluster",
+        color="grupo",
         width=1500,
         height=600,
-        zoom=11
+        zoom=11,
         )
 
     fig.update_layout(
@@ -194,7 +203,6 @@ def mapa(datos, distancia, numero_muestras):
                       "<b>Dirección: </b>%{customdata[10]} <br>"
                       "<b>Sexo: </b>%{customdata[1]} <br>"
                       "<b>Ocupación: </b>%{customdata[5]} <br>"
-
                       "<extra></extra>",
         )
     fig.update_geos(fitbounds="locations")

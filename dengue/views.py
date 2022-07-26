@@ -4,23 +4,8 @@ from django.views.generic import TemplateView
 from dengue.dash_apps import (
     analisis_dengue,
     clustering_dengue,
-    series,
     series_dengue,
-    vectores,
-    vectores2,
     )
-
-
-class SeriesAppView(TemplateView):
-    template_name = "dengue/series.html"
-
-
-class VectoresAppView(TemplateView):
-    template_name = "dengue/vectores.html"
-
-
-class VectoresAppView2(TemplateView):
-    template_name = "dengue/vectores2.html"
 
 
 class DashAppView(TemplateView):

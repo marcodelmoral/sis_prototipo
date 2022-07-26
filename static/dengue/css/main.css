@@ -39,65 +39,18 @@
     color: white;
 }
 
-/*!* input box *!*/
-/*.Select-control {*/
-/*    background-color: #000000;*/
-/*}*/
-
-
-/*!* changes the text color of input box *!*/
-/*.Select-value-label {*/
-/*    color: white !important;*/
-/*}*/
-
-/*.Select--single > .Select-control .Select-value, .Select-placeholder {*/
-/*    border: 1px solid grey;*/
-/*    border-radius: 4px;*/
-/*}*/
-
-
-/*!* dropdown menu options *!*/
-/*.VirtualizedSelectOption {*/
-/*    background-color: black;*/
-/*    color: white;*/
-/*}*/
-
-
-/*!* dropdown menu hover effect *!*/
-/*.VirtualizedSelectFocusedOption {*/
-/*    background-color: black;*/
-/*    opacity: .7;*/
-/*}*/
-
-
-/*!* border on focus - default is blue*/
-/* * shadow box around input box.  default is blue*/
-/* *!*/
-/*.is-focused:not(.is-open) > .Select-control {*/
-/*    border-color: var(--primary);*/
-/*    box-shadow: none;*/
-/*}*/
-
-
-/*!* this colors the input box text and x  of multi dropdown*!*/
-/*.Select--multi .Select-value {*/
-/*    color: white;*/
-/*}*/
-
 .has-value.Select--single > .Select-control .Select-value .Select-value-label, .has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label {
     color: #ffffff;
 }
 
 
 .DateRangePickerInput {
-    background-color: black;
-    border-color: black;
+    background-color: #222222;
+    border: 1px solid grey;
 }
 
-/*element.style {*/
-/*    stroke: rgb(238, 238, 238);*/
-/*    stroke-opacity: 1;*/
-/*    fill: rgb(68, 68, 68);*/
-/*    fill-opacity: 1;*/
-/*    stroke-width: 0px;*/
-/*}*/
+.DateInput_input {
+    background-color: #222222;
+    color: white;
+
+}
