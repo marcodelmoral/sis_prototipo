@@ -50,6 +50,7 @@ THIRD_PARTY_APPS = [
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "dpd_static_support",
     "django_select2",
+    'drf_spectacular'
     ]
 
 LOCAL_APPS = [
@@ -192,3 +193,14 @@ MAPBOX_KEY = "pk.eyJ1IjoibWFyY29qdWxpb2FyZyIsImEiOiJjbDRpeXZqM3Uwa3F6M2RrN2cyMHo
 
 PLOTLY_DEFAULT_THEME = "plotly_dark"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your Project API',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    }

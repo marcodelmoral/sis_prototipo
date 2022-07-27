@@ -16,6 +16,7 @@ Including another URLconf
 import debug_toolbar
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from .api import router
 
@@ -23,6 +24,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("__debug__/", include(debug_toolbar.urls)),
     path("api/v1/", include(router.urls)),
+    path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/v1/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger'),
+    path('api/v1/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path("django_plotly_dash/", include("django_plotly_dash.urls")),
     path("select2/", include("django_select2.urls")),
     path("", include("core.urls", namespace="core")),

@@ -151,18 +151,6 @@ app.layout = dbc.Container(
                         options=datos_agregados_tipo_dropdown(agregados=True),
                         )
                     ),
-                dbc.Col(
-                    dcc.Dropdown(
-                        id="periodo-dropdown",
-                        placeholder="Selecciona una periodo",
-                        multi=False,
-                        value="año",
-                        options=[
-                            {"label": "Por año", "value": "año"},
-                            {"label": "Por mes", "value": "mes"},
-                            ],
-                        )
-                    ),
                 ]
             ),
         dbc.Row(
@@ -316,7 +304,7 @@ def mapa_burbujas_callback(datos, ano):
             mapbox_accesstoken=settings.MAPBOX_KEY,
             title_text="Mapa de burbujas para casos",
             title_x=0.5,
-            # showlegend=False,
+            showlegend=True,
             )
 
         fig_mapa_burbujas.update_geos(fitbounds="locations")
@@ -399,8 +387,18 @@ def serie_estados_callback(datos, tipos):
     datos = pd.read_json(datos, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
     datos.sort_values(by=["fecha", "entidad"], inplace=True)
-    # if entidades != ["todos"]:
-    #     datos = datos[datos["entidad"].isin(entidades)]
+
+    datos_totales = datos.pivot_table(
+        values="valor", index=["fecha", "año", "mes", "entidad"], columns=["tipo"]
+        ).reset_index()
+
+    datos_totales = datos_totales.groupby("fecha").agg(OPT_MAP).reset_index()
+
+    datos_totales = datos_totales.melt(
+        id_vars="fecha", value_vars=[x[1] for x in DatosAgregados.TIPO_DATO], var_name="tipo", value_name="valor"
+        )
+    datos_totales["entidad"] = "Agregados"
+    datos = pd.concat([datos, datos_totales], axis=0)
     datos = datos[datos["tipo"].isin(tipos)]
     fig = px.line(
         datos,
@@ -411,7 +409,7 @@ def serie_estados_callback(datos, tipos):
         template="plotly_dark",
         )
     fig.update_layout(
-        title_text="Serie de tiempo para entidades",
+        title_text="Serie de tiempo para entidades por mes",
         title_x=0.5,
         xaxis_title="Fecha",
         yaxis_title="Valor",
@@ -454,22 +452,17 @@ def serie_estados_callback(datos, tipos):
     Output("fig-series-agregados", "figure"),
     Input("datos-procesados", "data"),
     Input("tipo-agregados-dropdown", "value"),
-    Input("periodo-dropdown", "value"),
     )
-def serie_agregados_callback(datos, tipos, periodo):
-    # TODO: por es es igual que el grafico anterior, agregar agregados a la grafica anterior
-    if periodo == "mes":
-        periodo = "fecha"
-
+def serie_agregados_callback(datos, tipos):
     datos = pd.read_json(datos, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
-    datos.sort_values(by=[periodo, "entidad"], inplace=True)
+    datos.sort_values(by=["año", "entidad"], inplace=True)
 
     datos = datos.pivot_table(
         values="valor", index=["fecha", "año", "mes", "entidad"], columns=["tipo"]
         ).reset_index()
 
-    datos_totales = datos.groupby(periodo).agg(OPT_MAP).reset_index()
+    datos_totales = datos.groupby("año").agg(OPT_MAP).reset_index()
 
     columnas = {
         ele[1]: f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})'
@@ -477,27 +470,27 @@ def serie_agregados_callback(datos, tipos, periodo):
         }
     datos_totales.rename(columns=columnas, inplace=True)
     datos_totales = datos_totales.melt(
-        id_vars=periodo, value_vars=list(columnas.values())
+        id_vars="año", value_vars=list(columnas.values())
         )
     datos_totales["entidad"] = "Agregados"
 
-    datos_entidades = datos.groupby([periodo, "entidad"]).agg(OPT_MAP).reset_index()
+    datos_entidades = datos.groupby(["año", "entidad"]).agg(OPT_MAP).reset_index()
     datos_entidades.rename(columns=columnas, inplace=True)
     datos_entidades = datos_entidades.melt(
-        id_vars=[periodo, "entidad"], value_vars=list(columnas.values())
+        id_vars=["año", "entidad"], value_vars=list(columnas.values())
         )
     datos = pd.concat([datos_entidades, datos_totales], axis=0)
     datos = datos[datos["tipo"].isin(tipos)]
     fig = px.line(
         datos,
-        x=periodo,
+        x="año",
         y="value",
         color="entidad",
         line_dash="tipo",
         template="plotly_dark",
         )
     fig.update_layout(
-        title_text="Serie de tiempo agregadas para entidades",
+        title_text="Serie de tiempo agregadas para entidades por año",
         title_x=0.5,
         xaxis_title="Fecha",
         yaxis_title="Valor",
