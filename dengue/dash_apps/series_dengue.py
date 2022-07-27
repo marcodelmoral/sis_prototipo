@@ -16,8 +16,9 @@ from django_plotly_dash import DjangoDash
 from dengue.dash_apps.utils import (
     OPT_MAP,
     agregados_fecha_dropdown,
-    datos_agregados_tipo_dropdown,
-    entidades_opciones_dropdown, mapa_init,
+    create_corr_plot, datos_agregados_tipo_dropdown,
+    descomposicion_series, entidades_opciones_dropdown,
+    mapa_init,
     )
 from dengue.models import DatosAgregados
 from geo.models import Entidad
@@ -111,121 +112,244 @@ app.layout = dbc.Container(
                 width=12,
                 )
             ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dcc.Dropdown(
-                        id="tipo-dropdown",
-                        placeholder="Selecciona una tipo de dato",
-                        multi=True,
-                        value=[
-                            [x["value"] for x in datos_agregados_tipo_dropdown()][0]
-                            ],
-                        options=datos_agregados_tipo_dropdown(),
-                        )
-                    ),
-                ]
-            ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dcc.Loading(dcc.Graph(id="fig-series", figure={}), type="cube"),
-                        ]
-                    ),
-                ]
-            ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dcc.Dropdown(
-                        id="tipo-agregados-dropdown",
-                        placeholder="Selecciona una tipo de dato",
-                        multi=True,
-                        value=[
+        dcc.Tabs(
+            id="tabs",
+            value="Exploración",
+            parent_className="custom-tabs",
+            className="custom-tabs-container",
+            children=[
+                dcc.Tab(
+                    label="Exploración",
+                    value='tab-1',
+                    className='custom-tab',
+                    selected_className='custom-tab--selected',
+                    children=[
+                        dbc.Row(
                             [
-                                x["value"]
-                                for x in datos_agregados_tipo_dropdown(agregados=True)
-                                ][0]
-                            ],
-                        options=datos_agregados_tipo_dropdown(agregados=True),
-                        )
-                    ),
-                ]
-            ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dcc.Loading(
-                            dcc.Graph(id="fig-series-agregados", figure={}), type="cube"
+                                dbc.Col(
+                                    dcc.Dropdown(
+                                        id="tipo-dropdown",
+                                        placeholder="Selecciona una tipo de dato",
+                                        multi=True,
+                                        value=[
+                                            [
+                                                x["value"]
+                                                for x in datos_agregados_tipo_dropdown()
+                                                ][0]
+                                            ],
+                                        options=datos_agregados_tipo_dropdown(),
+                                        )
+                                    ),
+                                ]
                             ),
-                        ]
-                    ),
-                ]
-            ),
-        dbc.Row([
-            dbc.Col(
-                [
-                    dcc.Dropdown(
-                        id="entidad-estacionalidad-dropdown",
-                        multi=False,
-                        value=entidades_opciones_dropdown(resolver_valor=True, todos=False)[0][
-                            "value"
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(id="fig-series", figure={}),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    dcc.Dropdown(
+                                        id="tipo-agregados-dropdown",
+                                        placeholder="Selecciona una tipo de dato",
+                                        multi=True,
+                                        value=[
+                                            [
+                                                x["value"]
+                                                for x in datos_agregados_tipo_dropdown(
+                                                agregados=True
+                                                )
+                                                ][0]
+                                            ],
+                                        options=datos_agregados_tipo_dropdown(
+                                            agregados=True
+                                            ),
+                                        )
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(
+                                                id="fig-series-agregados", figure={}
+                                                ),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Dropdown(
+                                            id="entidad-estacionalidad-dropdown",
+                                            multi=False,
+                                            value=entidades_opciones_dropdown(
+                                                resolver_valor=True, todos=False
+                                                )[0]["value"],
+                                            options=entidades_opciones_dropdown(
+                                                resolver_valor=True, todos=False
+                                                ),
+                                            )
+                                        ]
+                                    ),
+                                dbc.Col(
+                                    [
+                                        dcc.Dropdown(
+                                            id="tipo-estacionalidad-dropdown",
+                                            multi=False,
+                                            value=[
+                                                x["value"]
+                                                for x in datos_agregados_tipo_dropdown(agregados=False)
+                                                ][0],
+                                            options=datos_agregados_tipo_dropdown(agregados=False),
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(id="fig-series-estacionalidad-estado", figure={}),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(id="fig-barras-estacionalidad-estado", figure={}),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(
+                                                id="fig-barras-estacionalidad-estado-año", figure={}
+                                                ),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
                         ],
-                        options=entidades_opciones_dropdown(resolver_valor=True, todos=False),
-                        )
-                    ]
-                ),
-            dbc.Col(
-                [
-                    dcc.Dropdown(
-                        id="tipo-estacionalidad-dropdown",
-                        multi=False,
-                        value=[
-                            x["value"]
-                            for x in datos_agregados_tipo_dropdown(agregados=False)
-                            ][0],
-                        options=datos_agregados_tipo_dropdown(agregados=False),
-                        ),
-                    ]
-                ),
-            ]),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dcc.Loading(
-                            dcc.Graph(id="fig-series-estacionalidad-estado", figure={}),
-                            type="cube",
-                            ),
-                        ]
                     ),
-                ]
-            ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dcc.Loading(
-                            dcc.Graph(id="fig-barras-estacionalidad-estado", figure={}),
-                            type="cube",
+                dcc.Tab(value='tab-2',
+                        className='custom-tab',
+                        selected_className='custom-tab--selected', label="Descomposición", children=[
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Dropdown(
+                                            id="entidad-analisis-dropdown",
+                                            multi=False,
+                                            value="Datos agregados",
+                                            options=[{"label": "Datos agregados",
+                                                      "value": "Datos agregados"}] + entidades_opciones_dropdown(
+                                                resolver_valor=True, todos=False
+                                                ),
+                                            )
+                                        ]
+                                    ),
+                                dbc.Col(
+                                    [
+                                        dcc.Dropdown(
+                                            id="tipo-analisis-dropdown",
+                                            multi=False,
+                                            value=[
+                                                x["value"]
+                                                for x in datos_agregados_tipo_dropdown(agregados=False)
+                                                ][0],
+                                            options=datos_agregados_tipo_dropdown(agregados=False),
+                                            ),
+                                        ]
+                                    ),
+                                dbc.Col(
+                                    dcc.Dropdown(
+                                        id="periodo-analisis-dropdown",
+                                        placeholder="Selecciona una periodo",
+                                        multi=False,
+                                        value="mes",
+                                        options=[{"label": "Por año", "value": "año"},
+                                                 {"label": "Por mes", "value": "mes"}]
+                                        )
+                                    ),
+                                ]),
+                        dbc.Row([
+                            dcc.Loading(
+                                dcc.Graph(id="fig-serie-analisis", figure={}),
+                                type="cube",
+                                ),
+                            ]),
+                        dbc.Row([
+                            dcc.Loading(
+                                dcc.Graph(id="fig-tendencia-analisis", figure={}),
+                                type="cube",
+                                ),
+                            ]),
+                        dbc.Row([
+                            dcc.Loading(
+                                dcc.Graph(id="fig-estacionalidad-analisis", figure={}),
+                                type="cube",
+                                ),
+                            ]),
+                        dbc.Row([
+                            dcc.Loading(
+                                dcc.Graph(id="fig-residuales-analisis", figure={}),
+                                type="cube",
+                                ),
+                            ]),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(id="fig-series-correlacion-estado", figure={}),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                dbc.Col(
+                                    [
+                                        dcc.Loading(
+                                            dcc.Graph(id="fig-series-parcial-estado", figure={}),
+                                            type="cube",
+                                            ),
+                                        ]
+                                    ),
+                                ]
                             ),
-                        ]
-                    ),
-                ]
-            ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dcc.Loading(
-                            dcc.Graph(id="fig-barras-estacionalidad-estado-año", figure={}),
-                            type="cube",
-                            ),
-                        ]
-                    ),
-                ]
+
+                        ]),
+                ],
             ),
         ],
     fluid=True,
@@ -395,7 +519,10 @@ def serie_estados_callback(datos, tipos):
     datos_totales = datos_totales.groupby("fecha").agg(OPT_MAP).reset_index()
 
     datos_totales = datos_totales.melt(
-        id_vars="fecha", value_vars=[x[1] for x in DatosAgregados.TIPO_DATO], var_name="tipo", value_name="valor"
+        id_vars="fecha",
+        value_vars=[x[1] for x in DatosAgregados.TIPO_DATO],
+        var_name="tipo",
+        value_name="valor",
         )
     datos_totales["entidad"] = "Agregados"
     datos = pd.concat([datos, datos_totales], axis=0)
@@ -558,7 +685,7 @@ def serie_agregados_callback(datos, entidad, tipo):
         title_text="Serie de estacionalidad por mes",
         title_x=0.5,
         xaxis_title="Mes",
-        yaxis_title="Valor"
+        yaxis_title="Valor",
         )
 
     fig_barras_mes = px.box(
@@ -574,7 +701,7 @@ def serie_agregados_callback(datos, entidad, tipo):
         title_text="Gráfico de caja para estacionalidad por mes",
         title_x=0.5,
         xaxis_title="Mes",
-        yaxis_title="Valor"
+        yaxis_title="Valor",
         )
 
     fig_barras_ano = px.box(
@@ -591,7 +718,125 @@ def serie_agregados_callback(datos, entidad, tipo):
         title_x=0.5,
         xaxis_title="Año",
         yaxis_title="Valor",
-        xaxis=dict(tickmode="linear")
+        xaxis=dict(tickmode="linear"),
         )
 
     return fig_estacionalidad_mes, fig_barras_mes, fig_barras_ano
+
+
+@app.callback(
+    Output("fig-serie-analisis", "figure"),
+    Output("fig-tendencia-analisis", "figure"),
+    Output("fig-estacionalidad-analisis", "figure"),
+    Output("fig-residuales-analisis", "figure"),
+    Output("fig-series-correlacion-estado", "figure"),
+    Output("fig-series-parcial-estado", "figure"),
+    Input("datos-procesados", "data"),
+    Input("entidad-analisis-dropdown", "value"),
+    Input("tipo-analisis-dropdown", "value"),
+    Input("periodo-analisis-dropdown", "value"),
+    )
+def serie_analisis_callback(datos, entidad, tipo, periodo):
+    print(entidad, periodo, tipo)
+    datos = pd.read_json(datos, orient="split")
+    datos["fecha"] = pd.to_datetime(datos["fecha"])
+    datos = datos[datos["tipo"] == tipo]
+
+    if periodo == "mes":
+        periodo = "fecha"
+
+    if entidad == "Datos agregados":
+        datos = datos.pivot_table(
+            values="valor", index=["fecha", "año", "mes", "entidad"], columns=["tipo"]
+            ).reset_index()
+        datos = datos.groupby(periodo).agg(OPT_MAP[tipo]).reset_index()
+
+        datos = datos.melt(
+            id_vars=periodo,
+            value_vars=tipo,
+            var_name="tipo",
+            value_name="valor",
+            )
+        datos["entidad"] = "Agregados"
+    else:
+        datos = datos[datos["entidad"] == entidad]
+        if periodo == "año":
+            datos = datos.groupby(["año", "entidad"]).agg(OPT_MAP[tipo]).reset_index()
+            datos = datos.melt(
+                id_vars=["año", "entidad"], value_vars="valor", value_name="valor"
+                )
+    fig_serie = px.line(
+        datos,
+        x=periodo,
+        y="valor",
+        # color="entidad",
+        # line_dash="tipo",
+        template="plotly_dark",
+        )
+    fig_serie.update_layout(
+        title_text="Serie de tiempo",
+        title_x=0.5,
+        xaxis_title="Fecha",
+        yaxis_title="Valor",
+        xaxis=dict(
+            rangeselector=dict(
+                bgcolor="rgb(68, 68, 68)",
+                buttons=list(
+                    [
+                        dict(
+                            count=1,
+                            label="1m",
+                            step="month",
+                            stepmode="backward",
+                            ),
+                        dict(
+                            count=6,
+                            label="6m",
+                            step="month",
+                            stepmode="backward",
+                            ),
+                        dict(count=1, label="YTD", step="year", stepmode="todate"),
+                        dict(
+                            count=1,
+                            label="1y",
+                            step="year",
+                            stepmode="backward",
+                            ),
+                        dict(step="all"),
+                        ]
+                    ),
+                ),
+            rangeslider=dict(visible=True),
+            ),
+        )
+
+    descomposicion = descomposicion_series(datos["valor"], trend=13, low_pass=13)
+    descomposicion = pd.DataFrame(descomposicion)
+
+    fig_tendencia = px.line(
+        descomposicion,
+        x=descomposicion.index,
+        y="tendencia",
+        # color="entidad",
+        # line_dash="tipo",
+        template="plotly_dark",
+        )
+    fig_estacionalidad = px.line(
+        descomposicion,
+        x=descomposicion.index,
+        y="estacionalidad",
+        # color="entidad",
+        # line_dash="tipo",
+        template="plotly_dark",
+        )
+    fig_residuales = px.scatter(
+        descomposicion,
+        x=descomposicion.index,
+        y="residuales",
+        # color="entidad",
+        # line_dash="tipo",
+        template="plotly_dark",
+        )
+
+    return fig_serie, fig_tendencia, fig_estacionalidad, fig_residuales, create_corr_plot(
+        datos['valor']), create_corr_plot(datos['valor'], plot_pacf=True)

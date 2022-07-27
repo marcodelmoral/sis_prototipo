@@ -7,6 +7,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.stats import chi2, chi2_contingency
+from statsmodels.tsa.seasonal import STL
+from statsmodels.tsa.stattools import acf, pacf
 
 from dengue.models import DatosAgregados, Vector
 from geo.models import Entidad
@@ -232,4 +234,36 @@ def mapa_init():
         # title_x=0.5,
         margin=dict(l=10, t=60, b=10, r=10),
         )
+    return fig
+
+
+def descomposicion_series(datos, tipo: str = "stl", periodo: int = 12, season: int = 3, trend: int = 3,
+                          low_pass: int = 0) -> dict:
+    if tipo == "stl":
+        descomposicion = STL(datos, period=periodo, seasonal=season, trend=trend, low_pass=low_pass, robust=True).fit()
+        trendencia = descomposicion.trend
+        estacionalidad = descomposicion.seasonal
+        residuales = descomposicion.resid
+        return {"tendencia": trendencia, "estacionalidad": estacionalidad, "residuales": residuales}
+
+
+def create_corr_plot(series, plot_pacf=False):
+    corr_array = pacf(series.dropna(), alpha=0.05) if plot_pacf else acf(series.dropna(), alpha=0.05)
+    lower_y = corr_array[1][:, 0] - corr_array[0]
+    upper_y = corr_array[1][:, 1] - corr_array[0]
+
+    fig = go.Figure()
+    [fig.add_scatter(x=(x, x), y=(0, corr_array[0][x]), mode='lines', line_color='#3f3f3f')
+     for x in range(len(corr_array[0]))]
+    fig.add_scatter(x=np.arange(len(corr_array[0])), y=corr_array[0], mode='markers', marker_color='#1f77b4',
+                    marker_size=12)
+    fig.add_scatter(x=np.arange(len(corr_array[0])), y=upper_y, mode='lines', line_color='rgba(255,255,255,0)')
+    fig.add_scatter(x=np.arange(len(corr_array[0])), y=lower_y, mode='lines', fillcolor='rgba(32, 146, 230,0.3)',
+                    fill='tonexty', line_color='rgba(255,255,255,0)')
+    fig.update_traces(showlegend=False)
+    fig.update_xaxes(range=[-1, 42])
+    fig.update_yaxes(zerolinecolor='#000000')
+
+    title = 'Partial Autocorrelation (PACF)' if plot_pacf else 'Autocorrelation (ACF)'
+    fig.update_layout(title=title)
     return fig
