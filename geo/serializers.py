@@ -93,7 +93,7 @@ class LocalidadGeoSerializer(GeoFeatureModelSerializer):
 
         # you can also explicitly declare which fields you want to include
         # as with a ModelSerializer.
-        fields = ("id", "cvegeo", "nomgeo", "cve_ent", "cve_mun", "cve_loc", "ambito")
+        fields = ("cvegeo", "nomgeo", "cve_ent", "cve_mun", "cve_loc", "ambito")
 
 
 class ManzanaGeoSerializer(GeoFeatureModelSerializer):
@@ -108,7 +108,6 @@ class ManzanaGeoSerializer(GeoFeatureModelSerializer):
         # you can also explicitly declare which fields you want to include
         # as with a ModelSerializer.
         fields = (
-            "id",
             "cvegeo",
             "cve_ent",
             "cve_mun",

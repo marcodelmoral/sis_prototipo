@@ -114,15 +114,20 @@ app.layout = dbc.Container(
             ),
         dcc.Tabs(
             id="tabs",
-            value="Exploración",
-            parent_className="custom-tabs",
-            className="custom-tabs-container",
+            value="tab1",
+            colors={
+                "border": "white",
+                "primary": "white",
+                "background": "#222222"
+                },
+            # parent_className="custom-tabs",
+            # className="custom-tabs-container",
             children=[
                 dcc.Tab(
                     label="Exploración",
-                    value='tab-1',
-                    className='custom-tab',
-                    selected_className='custom-tab--selected',
+                    value="tab1",
+                    # className='custom-tab',
+                    # selected_className='custom-tab--selected',
                     children=[
                         dbc.Row(
                             [
@@ -261,9 +266,12 @@ app.layout = dbc.Container(
                             ),
                         ],
                     ),
-                dcc.Tab(value='tab-2',
-                        className='custom-tab',
-                        selected_className='custom-tab--selected', label="Descomposición", children=[
+                dcc.Tab(
+                    # className='custom-tab',
+                    # selected_className='custom-tab--selected',
+                    label="Descomposición",
+                    value="tab2",
+                    children=[
                         dbc.Row(
                             [
                                 dbc.Col(
@@ -272,8 +280,10 @@ app.layout = dbc.Container(
                                             id="entidad-analisis-dropdown",
                                             multi=False,
                                             value="Datos agregados",
-                                            options=[{"label": "Datos agregados",
-                                                      "value": "Datos agregados"}] + entidades_opciones_dropdown(
+                                            options=[{
+                                                "label": "Datos agregados",
+                                                "value": "Datos agregados"
+                                                }] + entidades_opciones_dropdown(
                                                 resolver_valor=True, todos=False
                                                 ),
                                             )
@@ -302,31 +312,40 @@ app.layout = dbc.Container(
                                                  {"label": "Por mes", "value": "mes"}]
                                         )
                                     ),
-                                ]),
-                        dbc.Row([
-                            dcc.Loading(
-                                dcc.Graph(id="fig-serie-analisis", figure={}),
-                                type="cube",
-                                ),
-                            ]),
-                        dbc.Row([
-                            dcc.Loading(
-                                dcc.Graph(id="fig-tendencia-analisis", figure={}),
-                                type="cube",
-                                ),
-                            ]),
-                        dbc.Row([
-                            dcc.Loading(
-                                dcc.Graph(id="fig-estacionalidad-analisis", figure={}),
-                                type="cube",
-                                ),
-                            ]),
-                        dbc.Row([
-                            dcc.Loading(
-                                dcc.Graph(id="fig-residuales-analisis", figure={}),
-                                type="cube",
-                                ),
-                            ]),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dcc.Loading(
+                                    dcc.Graph(id="fig-serie-analisis", figure={}),
+                                    type="cube",
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dcc.Loading(
+                                    dcc.Graph(id="fig-tendencia-analisis", figure={}),
+                                    type="cube",
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dcc.Loading(
+                                    dcc.Graph(id="fig-estacionalidad-analisis", figure={}),
+                                    type="cube",
+                                    ),
+                                ]
+                            ),
+                        dbc.Row(
+                            [
+                                dcc.Loading(
+                                    dcc.Graph(id="fig-residuales-analisis", figure={}),
+                                    type="cube",
+                                    ),
+                                ]
+                            ),
                         dbc.Row(
                             [
                                 dbc.Col(
@@ -348,7 +367,8 @@ app.layout = dbc.Container(
                                 ]
                             ),
 
-                        ]),
+                        ]
+                    ),
                 ],
             ),
         ],
@@ -375,14 +395,14 @@ def prepara_datos_callback(_):
     Input("datos-procesados", "data"),
     Input("ano-dropdown", "value"),
     )
-def mapa_burbujas_callback(datos, ano):
+def mapa_burbujas_callback(datos_json, ano):
     # TODO: Agregar porcentajes a la grafica de barras o animar un grafico de pastel
     entidades_geojson = json.dumps(
         EntidadGeoSerializer(Entidad.objects.all(), many=True).data
         )
     df_entidades = gpd.read_file(entidades_geojson)
     df_entidades.rename(columns={"nomgeo": "entidad"}, inplace=True)
-    datos = pd.read_json(datos, orient="split")
+    datos = pd.read_json(datos_json, orient="split")
 
     datos["fecha"] = pd.to_datetime(datos["fecha"])
     datos.sort_values(by="fecha", inplace=True)
@@ -507,8 +527,8 @@ def mapa_burbujas_callback(datos, ano):
     Input("datos-procesados", "data"),
     Input("tipo-dropdown", "value"),
     )
-def serie_estados_callback(datos, tipos):
-    datos = pd.read_json(datos, orient="split")
+def serie_estados_callback(datos_json, tipos):
+    datos = pd.read_json(datos_json, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
     datos.sort_values(by=["fecha", "entidad"], inplace=True)
 
@@ -580,8 +600,8 @@ def serie_estados_callback(datos, tipos):
     Input("datos-procesados", "data"),
     Input("tipo-agregados-dropdown", "value"),
     )
-def serie_agregados_callback(datos, tipos):
-    datos = pd.read_json(datos, orient="split")
+def serie_agregados_callback(datos_json, tipos):
+    datos = pd.read_json(datos_json, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
     datos.sort_values(by=["año", "entidad"], inplace=True)
 
@@ -736,9 +756,8 @@ def serie_agregados_callback(datos, entidad, tipo):
     Input("tipo-analisis-dropdown", "value"),
     Input("periodo-analisis-dropdown", "value"),
     )
-def serie_analisis_callback(datos, entidad, tipo, periodo):
-    print(entidad, periodo, tipo)
-    datos = pd.read_json(datos, orient="split")
+def serie_analisis_callback(datos_json, entidad, tipo, periodo):
+    datos = pd.read_json(datos_json, orient="split")
     datos["fecha"] = pd.to_datetime(datos["fecha"])
     datos = datos[datos["tipo"] == tipo]
 
@@ -839,4 +858,5 @@ def serie_analisis_callback(datos, entidad, tipo, periodo):
         )
 
     return fig_serie, fig_tendencia, fig_estacionalidad, fig_residuales, create_corr_plot(
-        datos['valor']), create_corr_plot(datos['valor'], plot_pacf=True)
+        datos['valor']
+        ), create_corr_plot(datos['valor'], plot_pacf=True)

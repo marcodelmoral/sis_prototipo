@@ -1,6 +1,5 @@
 from django.views.generic import TemplateView
 
-# noinspection PyUnresolvedReferences
 from dengue.dash_apps import (
     analisis_dengue,
     clustering_dengue,
@@ -33,7 +32,3 @@ class ClusteringDengueAppView(DashAppView):
 class SeriesDengueAppView(DashAppView):
     dash_app = series_dengue
     titulo = "Tablero de datos"
-
-# class SeriesAppView(DashAppView):
-#     dash_app = clustering_dengue
-#     titulo = "Clustering de Dengue"
