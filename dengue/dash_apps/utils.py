@@ -15,12 +15,12 @@ from geo.models import Entidad
 from prototipo import settings
 
 OPT_MAP = {
-    "Número de casos": "sum",
-    "Precipitación": "mean",
-    "Temperatura máxima": "mean",
-    "Temperatura mínima": "mean",
-    "Temperatura promedio": "mean",
-    }
+        "Número de casos": "sum",
+        "Precipitación": "mean",
+        "Temperatura máxima": "mean",
+        "Temperatura mínima": "mean",
+        "Temperatura promedio": "mean",
+        }
 
 
 def entidades_opciones_dropdown(resolver_valor: bool = False, todos=True) -> list[dict[str, str]]:
@@ -32,14 +32,14 @@ def entidades_opciones_dropdown(resolver_valor: bool = False, todos=True) -> lis
 
     if resolver_valor:
         entidades = [
-            {"label": x["nomgeo"], "value": x["nomgeo"]}
-            for x in list(Entidad.objects.values("nomgeo"))
-            ]
+                {"label": x["nomgeo"], "value": x["nomgeo"]}
+                for x in list(Entidad.objects.values("nomgeo"))
+                ]
     else:
         entidades = [
-            {"label": x["nomgeo"], "value": x["cvegeo"]}
-            for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
-            ]
+                {"label": x["nomgeo"], "value": x["cvegeo"]}
+                for x in list(Entidad.objects.values("cvegeo", "nomgeo"))
+                ]
     if todos:
         return [{"label": "Todos", "value": "todos"}] + entidades
     return entidades
@@ -92,12 +92,12 @@ def datos_agregados_tipo_dropdown(agregados=False) -> list[dict[str, str]]:
 
     if agregados:
         return [
-            {
-                "label": f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})',
-                "value": f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})',
-                }
-            for ele in DatosAgregados.TIPO_DATO
-            ]
+                {
+                        "label": f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})',
+                        "value": f'{ele[1]} ({"suma" if OPT_MAP[ele[1]] == "sum" else "media"})',
+                        }
+                for ele in DatosAgregados.TIPO_DATO
+                ]
     return [{"label": x[1], "value": x[1]} for x in DatosAgregados.TIPO_DATO]
 
 
@@ -137,14 +137,14 @@ def prueba_chi_cuadrada(
         hipotesis_valor_p = "Dependiente (Se rechaza H0)"
 
     return {
-        "estadistico": estadistico,
-        "valor_p": valor_p,
-        "gdl": gdl,
-        "esperado": esperado,
-        "alfa": alfa,
-        "prueba_estadistico": hipotesis_critico,
-        "prueba_valor-p": hipotesis_valor_p,
-        }
+            "estadistico": estadistico,
+            "valor_p": valor_p,
+            "gdl": gdl,
+            "esperado": esperado,
+            "alfa": alfa,
+            "prueba_estadistico": hipotesis_critico,
+            "prueba_valor-p": hipotesis_valor_p,
+            }
 
 
 def cmap_aleatorio(
@@ -171,20 +171,20 @@ def cmap_aleatorio(
 
     if intensidad == "brillante":
         randHSVcolors = [
-            (
-                np.random.uniform(low=0.0, high=1),
-                np.random.uniform(low=0.2, high=1),
-                np.random.uniform(low=0.9, high=1),
-                )
-            for i in range(numero_colores)
-            ]
+                (
+                        np.random.uniform(low=0.0, high=1),
+                        np.random.uniform(low=0.2, high=1),
+                        np.random.uniform(low=0.9, high=1),
+                        )
+                for i in range(numero_colores)
+                ]
 
         # Convert HSV list to RGB
         randRGBcolors = []
         for HSVcolor in randHSVcolors:
             randRGBcolors.append(
-                colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2])
-                )
+                    colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2])
+                    )
 
         if primero_blanco:
             randRGBcolors[0] = [1, 1, 1]
@@ -193,20 +193,20 @@ def cmap_aleatorio(
             randRGBcolors[-1] = [1, 1, 1]
 
         random_colormap = LinearSegmentedColormap.from_list(
-            "new_map", randRGBcolors, N=numero_colores
-            )
+                "new_map", randRGBcolors, N=numero_colores
+                )
 
     if intensidad == "opaco":
         low = 0.6
         high = 0.95
         randRGBcolors = [
-            (
-                np.random.uniform(low=low, high=high),
-                np.random.uniform(low=low, high=high),
-                np.random.uniform(low=low, high=high),
-                )
-            for i in range(numero_colores)
-            ]
+                (
+                        np.random.uniform(low=low, high=high),
+                        np.random.uniform(low=low, high=high),
+                        np.random.uniform(low=low, high=high),
+                        )
+                for _ in range(numero_colores)
+                ]
 
         if primero_blanco:
             randRGBcolors[0] = [1, 1, 1]
@@ -214,8 +214,8 @@ def cmap_aleatorio(
         if ultimo_blanco:
             randRGBcolors[-1] = [1, 1, 1]
         random_colormap = LinearSegmentedColormap.from_list(
-            "new_map", randRGBcolors, N=numero_colores
-            )
+                "new_map", randRGBcolors, N=numero_colores
+                )
 
     return [mcolors.rgb2hex(random_colormap(i)) for i in range(random_colormap.N)]
 
@@ -224,21 +224,23 @@ def mapa_init():
     fig = go.Figure()
     fig.add_trace(go.Scattermapbox())
     fig.update_layout(
-        mapbox=dict(
-            accesstoken=settings.MAPBOX_KEY,
-            zoom=5,
-            center=dict(lat=20.31296, lon=-99.5364),
-            style="dark",
-            ),
-        # title_text="Mapa de casos",
-        # title_x=0.5,
-        margin=dict(l=10, t=60, b=10, r=10),
-        )
+            mapbox=dict(
+                    accesstoken=settings.MAPBOX_KEY,
+                    zoom=5,
+                    center=dict(lat=20.31296, lon=-99.5364),
+                    style="dark",
+                    ),
+            # title_text="Mapa de casos",
+            # title_x=0.5,
+            margin=dict(l=10, t=60, b=10, r=10),
+            )
     return fig
 
 
-def descomposicion_series(datos, tipo: str = "stl", periodo: int = 12, season: int = 3, trend: int = 3,
-                          low_pass: int = 0) -> dict:
+def descomposicion_series(
+        datos, tipo: str = "stl", periodo: int = 12, season: int = 3, trend: int = 3,
+        low_pass: int = 0
+        ) -> dict:
     if tipo == "stl":
         descomposicion = STL(datos, period=periodo, seasonal=season, trend=trend, low_pass=low_pass, robust=True).fit()
         trendencia = descomposicion.trend
@@ -247,23 +249,29 @@ def descomposicion_series(datos, tipo: str = "stl", periodo: int = 12, season: i
         return {"tendencia": trendencia, "estacionalidad": estacionalidad, "residuales": residuales}
 
 
-def create_corr_plot(series, plot_pacf=False):
-    corr_array = pacf(series.dropna(), alpha=0.05) if plot_pacf else acf(series.dropna(), alpha=0.05)
+def create_corr_plot(series, lags, plot_pacf=False):
+    corr_array = pacf(series.dropna(), alpha=0.05, nlags=lags) if plot_pacf else acf(
+            series.dropna(), alpha=0.05, nlags=lags
+            )
     lower_y = corr_array[1][:, 0] - corr_array[0]
     upper_y = corr_array[1][:, 1] - corr_array[0]
 
     fig = go.Figure()
     [fig.add_scatter(x=(x, x), y=(0, corr_array[0][x]), mode='lines', line_color='#3f3f3f')
      for x in range(len(corr_array[0]))]
-    fig.add_scatter(x=np.arange(len(corr_array[0])), y=corr_array[0], mode='markers', marker_color='#1f77b4',
-                    marker_size=12)
+    fig.add_scatter(
+            x=np.arange(len(corr_array[0])), y=corr_array[0], mode='markers', marker_color='#1f77b4',
+            marker_size=12
+            )
     fig.add_scatter(x=np.arange(len(corr_array[0])), y=upper_y, mode='lines', line_color='rgba(255,255,255,0)')
-    fig.add_scatter(x=np.arange(len(corr_array[0])), y=lower_y, mode='lines', fillcolor='rgba(32, 146, 230,0.3)',
-                    fill='tonexty', line_color='rgba(255,255,255,0)')
+    fig.add_scatter(
+            x=np.arange(len(corr_array[0])), y=lower_y, mode='lines', fillcolor='rgba(32, 146, 230,0.3)',
+            fill='tonexty', line_color='rgba(255,255,255,0)'
+            )
     fig.update_traces(showlegend=False)
-    fig.update_xaxes(range=[-1, 42])
+    fig.update_xaxes(range=[-1, len(corr_array[0])])
     fig.update_yaxes(zerolinecolor='#000000')
 
-    title = 'Partial Autocorrelation (PACF)' if plot_pacf else 'Autocorrelation (ACF)'
+    title = 'Autocorrelación parcial (PACF)' if plot_pacf else 'Autocorrelación (ACF)'
     fig.update_layout(title=title)
     return fig

@@ -21,7 +21,7 @@ class DashAppView(TemplateView):
 
 class AnalisisDengueAppView(DashAppView):
     dash_app = analisis_dengue
-    titulo = "Analisis de datos"
+    titulo = "Análisis de datos"
 
 
 class ClusteringDengueAppView(DashAppView):
@@ -31,4 +31,4 @@ class ClusteringDengueAppView(DashAppView):
 
 class SeriesDengueAppView(DashAppView):
     dash_app = series_dengue
-    titulo = "Tablero de datos"
+    titulo = "Análisis de series de tiempo"
