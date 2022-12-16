@@ -37,7 +37,7 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django.contrib.postgres",
-    ]
+]
 
 THIRD_PARTY_APPS = [
     "django_extensions",
@@ -50,14 +50,18 @@ THIRD_PARTY_APPS = [
     "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "dpd_static_support",
     "django_select2",
-    'drf_spectacular'
-    ]
+    "drf_spectacular",
+    "leaflet",
+    'simple_history',
+    'crispy_forms',
+]
 
 LOCAL_APPS = [
-    "core.apps.CoreConfig",
-    "geo.apps.GeoConfig",
-    "dengue.apps.DengueConfig",
-    ]
+    "prototipo.apps.core.apps.CoreConfig",
+    "prototipo.apps.geo.apps.GeoConfig",
+    "prototipo.apps.vectores.apps.VectorConfig",
+    "prototipo.apps.embarazadas.apps.EmbarazadasConfig",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -72,7 +76,7 @@ MIDDLEWARE = [
     "django_plotly_dash.middleware.ExternalRedirectionMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    ]
+]
 
 ROOT_URLCONF = "prototipo.urls"
 
@@ -87,10 +91,10 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                ],
-            },
+            ],
         },
-    ]
+    },
+]
 
 WSGI_APPLICATION = "prototipo.wsgi.application"
 
@@ -100,12 +104,12 @@ WSGI_APPLICATION = "prototipo.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "geo",
+        "NAME": "geo2",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "127.0.0.1",
-        }
     }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -113,17 +117,17 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-        },
+    },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        },
+    },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-        },
+    },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-        },
-    ]
+    },
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -152,7 +156,7 @@ INTERNAL_IPS = [
     # ...
     "127.0.0.1",
     # ...
-    ]
+]
 
 CRS = 4326
 
@@ -164,10 +168,10 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [
                 ("127.0.0.1", 6379),
-                ],
-            },
+            ],
         },
-    }
+    },
+}
 
 ASGI_APPLICATION = "prototipo.routing.application"
 STATICFILES_DIRS = (BASE_DIR / "static",)
@@ -178,7 +182,7 @@ STATICFILES_FINDERS = [
     "django_plotly_dash.finders.DashAssetFinder",
     "django_plotly_dash.finders.DashComponentFinder",
     "django_plotly_dash.finders.DashAppDirectoryFinder",
-    ]
+]
 
 # Plotly components containing static content that should
 # be handled by the Django staticfiles infrastructure
@@ -187,7 +191,7 @@ PLOTLY_COMPONENTS = [
     "dash_bootstrap_components",
     "dpd_components",
     "dpd_static_support",
-    ]
+]
 
 MAPBOX_KEY = "pk.eyJ1IjoibWFyY29qdWxpb2FyZyIsImEiOiJjbDRpeXZqM3Uwa3F6M2RrN2cyMHo3d3BuIn0.5rOOaVbkAGiZeR7KvvlE9Q"
 
@@ -196,11 +200,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    }
+}
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Your Project API',
     'DESCRIPTION': 'Your project description',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    }
+}

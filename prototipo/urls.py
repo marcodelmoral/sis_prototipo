@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/v1/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path("django_plotly_dash/", include("django_plotly_dash.urls")),
     path("select2/", include("django_select2.urls")),
-    path("", include("core.urls", namespace="core")),
-    path("dengue/", include("dengue.urls", namespace="dengue")),
-    path("geo/", include("geo.urls", namespace="geo")),
-    ]
+    path("", include("prototipo.apps.core.urls", namespace="core")),
+    path("vectores/", include("prototipo.apps.vectores.urls", namespace="vectores")),
+    path("geo/", include("prototipo.apps.geo.urls", namespace="geo")),
+]

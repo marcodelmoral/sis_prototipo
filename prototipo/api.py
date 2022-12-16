@@ -1,7 +1,7 @@
 from rest_framework import routers
 
-from dengue import api_views as dengue_views
-from geo import api_views as geo_views
+from prototipo.apps.geo import api_views as geo_views
+from prototipo.apps.vectores import api_views as dengue_views
 
 router = routers.DefaultRouter()
 vectores = router.register("vectores", dengue_views.VectorViewSet)
