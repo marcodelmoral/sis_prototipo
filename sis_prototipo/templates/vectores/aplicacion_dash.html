@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load plotly_dash %}
+{% block header %}
+
+    {% plotly_header %}
+    {% plotly_message_pipe %}
+    <link rel="stylesheet" type="text/css" href="{% static "dengue/css/main.css" %}">
+{% endblock %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+    <div class="card border-dark">
+        <div class="card-body">
+            <div class="{% plotly_class name=dash_app template_type="div-direct" %}">
+                {% plotly_direct name=dash_app %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {% plotly_footer %}
+{% endblock %}

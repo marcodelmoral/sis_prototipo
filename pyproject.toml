@@ -1,0 +1,79 @@
+[tool.poetry]
+name = "sis-prototipo"
+version = "0.1.0"
+description = "Prototipo de Sistema de Informacion en Salud"
+authors = ["Marco del Moral"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "sis_prototipo"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+django = "^3.2"
+django-environ = "^0.9.0"
+django-model-utils = "^4.3.1"
+django-allauth = "^0.52.0"
+django-crispy-forms = "^1.14.0"
+crispy-bootstrap5 = "^0.7"
+django-redis = "^5.2.0"
+djangorestframework = "^3.14.0"
+django-cors-headers = "^3.13.0"
+drf-spectacular = "^0.25.1"
+whitenoise = "^6.3.0"
+redis = {extras = ["hiredis"], version = "^4.4.2"}
+celery = "^5.2.7"
+django-celery-beat = "^2.4.0"
+uvicorn = {extras = ["standard"], version = "^0.20.0"}
+django-extensions = "^3.2.1"
+django-anymail = {extras = ["sendgrid"], version = "^9.0"}
+psycopg2 = "^2.9.5"
+channels = "^4.0.0"
+channels-redis = "^4.0.0"
+scikit-learn = "^1.2.0"
+statsmodels = "^0.13.5"
+geopandas = "^0.12.2"
+geoalchemy2 = "^0.13.0"
+matplotlib = "^3.6.3"
+djangorestframework-gis = "^1.0"
+django-plotly-dash = "^2.1.3"
+django-pandas = "^0.6.6"
+django-select2 = "^8.0.0"
+dpd-static-support = "^0.0.5"
+darts = "^0.23.1"
+dash-bootstrap-components = "^1.3.0"
+django-filter = "^22.1"
+django-bootstrap-v5 = "^1.0.11"
+django-leaflet = "^0.28.3"
+django-simple-history = "^3.2.0"
+dash = "2.6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^0.991"
+django-stubs = "^1.13.1"
+djangorestframework-stubs = "^1.8.0"
+isort = "^5.11.4"
+coverage = "^7.0.5"
+black = "^22.12.0"
+pylint-django = "^2.5.3"
+pylint-celery = "^0.3"
+pre-commit = "^2.21.0"
+django-debug-toolbar = "^3.8.1"
+pytest-django = "^4.5.2"
+psycopg2-binary = "^2.9.5"
+autoflake = "^2.0.0"
+pytest-env = "^0.8.1"
+pandas-stubs = "^1.5.2.230105"
+bandit = "^1.7.4"
+pytest-asyncio = "^0.20.3"
+httpx = "^0.23.3"
+pytest-xdist = "^3.1.0"
+pytest = "^7.2.1"
+pytest-cov = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
