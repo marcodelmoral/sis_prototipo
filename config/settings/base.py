@@ -368,8 +368,11 @@ SPECTACULAR_SETTINGS = {
 # Your stuff...
 # ------------------------------------------------------------------------------
 
+
+# CRS config
 CRS = 4326
 
+# Dash config
 PLOTLY_DASH = {
     "ws_route" : "ws/channel",
 
@@ -397,3 +400,22 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800
 
 MAPBOX_KEY = env("MAPBOX_API_KEY", default="")
 HERE_KEY = env("HERE_API_KEY", default="")
+
+
+# Leaflet config
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (19.419444,  -99.145556),
+    'DEFAULT_ZOOM': 5,
+    'NO_GLOBALS': False,
+    'RESET_VIEW': False,
+    'MINIMAP': False,
+    'MAX_ZOOM': 19,
+    'MIN_ZOOM': 5,
+    'ATTRIBUTION_PREFIX': 'Autor: Marco Julio Del Moral Argumedo - Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
+}
+
+
+# Embarazadas
+
+MANTENER_EMBARAZADA = 375
+MANTENER_VECTOR = 45

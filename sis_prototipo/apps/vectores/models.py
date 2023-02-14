@@ -1,6 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 
 from sis_prototipo.apps.geo.models import Entidad, Municipio
+from sis_prototipo.apps.vectores.validators import validador_archivo_sinave, validador_archivo_estudio
 
 
 class Vector(models.Model):
@@ -109,6 +111,36 @@ class Vector(models.Model):
     # def get_absolute_url(self):
     #     return reverse('geo:vectores', kwargs={'pk': self.pk})
 
+
+# class ArchivoVector(models.Model):
+#     # usuario = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+#     # tipo = models.CharField(max_length=255, blank=True, null=True)
+#     creado = models.DateTimeField(auto_now_add=True)
+#     # todo Volver a convertir en unico
+#     hash = models.CharField(max_length=255)
+#     archivo = models.FileField(upload_to='MEDIA',
+#                                help_text='Archivo en formato .txt',
+#                                validators=[validador_archivo_sinave])
+#
+#     def save(self, *args, **kwargs):
+#         if not self.hash:
+#             self.hash = generate_sha(self.archivo)
+#         super(ArchivoVector, self).save(*args, **kwargs)
+
+
+# class ArchivoEpidemio(models.Model):
+#     # usuario = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+#     creado = models.DateTimeField(auto_now_add=True)
+#     # todo convertir en unico
+#     hash = models.CharField(max_length=255)
+#     archivo = models.FileField(upload_to='MEDIA',
+#                                help_text='Archivo en formato xlsx',
+#                                validators=[validador_archivo_estudio])
+#
+#     def save(self, *args, **kwargs):
+#         if not self.hash:
+#             self.hash = generate_sha(self.archivo)
+#         super(ArchivoEpidemio, self).save(*args, **kwargs)
 
 class DatosAgregados(models.Model):
     TIPO_DATO = (

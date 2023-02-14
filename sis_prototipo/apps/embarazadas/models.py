@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django.contrib.gis.measure import Distance
 from django.core.serializers import serialize
@@ -8,10 +9,26 @@ from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from sis_prototipo.apps.embarazadas.managers import EmbarazadaManager
+from sis_prototipo.apps.embarazadas.validators import validador_archivo_embarazada, validador_nss
 
-# from prototipo.apps.embarazadas.validators import validador_nss
 from sis_prototipo.apps.geo.models import Entidad, Localidad, Municipio
 from sis_prototipo.apps.vectores.models import Vector
+from sis_prototipo.utils.utils import generate_sha
+
+
+class ArchivoEmbarazada(models.Model):
+    usuario = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    hash = models.CharField(max_length=255)
+    archivo = models.FileField(upload_to='MEDIA',
+                               help_text='Archivo en formato xlsx',
+                               validators=[validador_archivo_embarazada])
+
+    def save(self, *args, **kwargs):
+        if not self.hash:
+            self.hash = generate_sha(self.archivo)
+        super(ArchivoEmbarazada, self).save(*args, **kwargs)
+
 
 
 class Embarazada(models.Model):
@@ -45,7 +62,7 @@ class Embarazada(models.Model):
     )
     nss = models.CharField(
         max_length=11,
-        # validators=[validador_nss]
+        validators=[validador_nss]
     )  # Se valida en el form
     # Se le quitó el Unique porque entraba en conflicto con una función de la API
     ide_nom = models.CharField(max_length=255, blank=True, null=True)
@@ -343,13 +360,13 @@ class Embarazada(models.Model):
     #         self.save()
 
     def vector_cercano(self):
-        if self.PRECISION:
+        if self.precision:
             qs = (
                 Vector.objects.activos()
                 .precisos()
                 .filter(
                     geo__distance_lt=(
-                        self.geometry,
+                        self.geo,
                         Distance(km=settings.DISTANCIA),
                     )
                 )
