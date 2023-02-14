@@ -5,13 +5,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 
 
-class Demograficos(models.Model):
-    fecha = models.DateField()
-
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.CharField(max_length=16)
-    content_object = GenericForeignKey()
-
+class DivisionGeografica(models.Model):
+    geom = models.MultiPolygonField(srid=settings.CRS)
+    cve_ent = models.CharField(max_length=2)
     pobtot = models.PositiveIntegerField(
         "Población total",
         null=True,
@@ -28,15 +24,12 @@ class Demograficos(models.Model):
         blank=True,
     )
 
+    class Meta:
+        abstract = True
 
-class Entidad(models.Model):
-    geom = models.MultiPolygonField(srid=settings.CRS)
+class Entidad(DivisionGeografica):
     cvegeo = models.CharField(max_length=2, primary_key=True)
     nomgeo = models.CharField(max_length=80)
-
-    cve_ent = models.CharField(max_length=2)
-
-    demograficos = GenericRelation(Demograficos)
 
     def __str__(self):
         return self.nomgeo
@@ -45,7 +38,7 @@ class Entidad(models.Model):
         ordering = ["nomgeo"]
 
 
-class Municipio(models.Model):
+class Municipio(DivisionGeografica):
     geom = models.MultiPolygonField(srid=settings.CRS)
     cvegeo = models.CharField(max_length=5, primary_key=True)
     nomgeo = models.CharField(max_length=80)
@@ -53,8 +46,6 @@ class Municipio(models.Model):
     cve_mun = models.CharField(max_length=3)
     entidad = models.ForeignKey(Entidad, on_delete=models.SET_NULL, null=True)
 
-    demograficos = GenericRelation(Demograficos)
-
     def __str__(self):
         return self.nomgeo
 
@@ -62,8 +53,7 @@ class Municipio(models.Model):
         ordering = ["nomgeo"]
 
 
-class Localidad(models.Model):
-    geom = models.GeometryField(srid=settings.CRS)
+class Localidad(DivisionGeografica):
     PLANO_TIPO = ((0, "No"), (1, "Si"), (2, "Croquis"))
     AMBITO_TIPO = ((0, "No Aplica"), (1, "Urbana"), (2, "Rural"))
     cvegeo = models.CharField(max_length=9, primary_key=True)
@@ -77,8 +67,6 @@ class Localidad(models.Model):
     municipio = models.ForeignKey(
         Municipio, on_delete=models.SET_NULL, null=True
     )
-    demograficos = GenericRelation(Demograficos)
-
     def __str__(self):
         return self.nomgeo
 
@@ -86,7 +74,7 @@ class Localidad(models.Model):
         ordering = ["nomgeo"]
 
 
-class Manzana(models.Model):
+class Manzana(DivisionGeografica):
     # Definicion de elementos para campo de eleccion
     AMBITO_TIPO = ((0, "No Aplica"), (1, "Urbana"), (2, "Rural"))
     MANZANA_TIPO = (
@@ -102,7 +90,7 @@ class Manzana(models.Model):
         (9, "Camellón"),
         (10, "Bajo Puente"),
     )
-    geom = models.PolygonField(srid=settings.CRS)
+
     cvegeo = models.CharField(max_length=16, primary_key=True)
     cve_ent = models.CharField(max_length=2)
     cve_mun = models.CharField(max_length=3)
@@ -114,7 +102,6 @@ class Manzana(models.Model):
     localidad = models.ForeignKey(
         Localidad, on_delete=models.SET_NULL, null=True
     )
-    demograficos = GenericRelation(Demograficos)
 
     def __str__(self):
         return self.cvegeo

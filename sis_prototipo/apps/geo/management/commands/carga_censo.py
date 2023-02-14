@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management import BaseCommand
 from sqlalchemy import create_engine
 
-from sis_prototipo.apps.geo.models import Demograficos
+from sis_prototipo.apps.geo.models import Entidad, Municipio, Localidad, Manzana
 
 warnings.filterwarnings('ignore')
 
@@ -31,9 +31,6 @@ class Command(BaseCommand):
         self.engine = create_engine(db_uri).connect()
 
         self.columnas = [
-            "object_id",
-            "content_type_id",
-            "fecha",
             "pobtot",
             "pobmas",
             "pobfem",
@@ -43,14 +40,8 @@ class Command(BaseCommand):
         parser.add_argument("origen", nargs="?", type=str, help="Carpeta origen", default="data/poblacion/censo2020")
 
     def carga_datos(self, origen: str):
-        fecha = int(re.findall(r"\d+", origen.split("/")[-1])[0])
-        fecha = datetime.date(fecha, 1, 1)
-        origen = pathlib.Path(origen)
 
-        entidad_contenttype_id = ContentType.objects.get(model="entidad").id
-        municipio_contenttype_id = ContentType.objects.get(model="municipio").id
-        localidad_contenttype_id = ContentType.objects.get(model="localidad").id
-        manzana_contenttype_id = ContentType.objects.get(model="manzana").id
+        origen = pathlib.Path(origen)
 
         lista_df = [
             pd.read_csv(archivo, low_memory=False, encoding="utf-8")
@@ -72,35 +63,28 @@ class Command(BaseCommand):
 
         df.replace("*", 0, inplace=True)
 
-        df["fecha"] = fecha
-
-        df["object_id"] = None
-        df["content_type_id"] = None
-
         # Todos
-        df['object_id'].loc[df['nom_loc'] == 'Total de la entidad'] = df["entidad"]
-        df['content_type_id'].loc[df['nom_loc'] == 'Total de la entidad'] = entidad_contenttype_id
+        df["cvegeo"] = None
 
-        df['object_id'].loc[df['nom_loc'] == 'Total del municipio'] = df["entidad"] + df["mun"]
-        df['content_type_id'].loc[df['nom_loc'] == 'Total del municipio'] = municipio_contenttype_id
+        df['cvegeo'].loc[df['nom_loc'] == 'Total de la entidad'] = df["entidad"]
 
-        df['object_id'].loc[df['nom_loc'] == 'Total de la localidad urbana'] = df["entidad"] + df["mun"] + df["loc"]
-        df['content_type_id'].loc[df['nom_loc'] == 'Total de la localidad urbana'] = localidad_contenttype_id
+        df['cvegeo'].loc[df['nom_loc'] == 'Total del municipio'] = df["entidad"] + df["mun"]
 
-        df['object_id'].loc[df['mza'] != "000"] = df["entidad"] + df["mun"] + df["loc"] + df["ageb"] + df["mza"]
-        df['content_type_id'].loc[df['mza'] != "000"] = manzana_contenttype_id
+        df['cvegeo'].loc[df['nom_loc'] == 'Total de la localidad urbana'] = df["entidad"] + df["mun"] + df["loc"]
+
+        df['cvegeo'].loc[df['mza'] != "000"] = df["entidad"] + df["mun"] + df["loc"] + df["ageb"] + df["mza"]
 
         df = df[self.columnas]
 
-        df.sort_values("object_id", inplace=True)
+        df_entidad = df[df["nom_loc"] == "Total de la entidad"].copy()
+        df_mun = df[df["nom_loc"] == "Total del municipio"].copy()
+        df_loc = df[df["nom_loc"] == "Total de la localidad urbana"].copy()
+        df_mza = df[df["mza"] != "000"].copy()
 
-        df.to_sql(
-            Demograficos._meta.db_table,
-            con=self.engine,
-            index=False,
-            if_exists="append",
-            method="multi",
-        )
+        Entidad.objects.bulk_update(Entidad.objects.all(), self.columnas)
+        Municipio.objects.bulk_update(Municipio.objects.all(), self.columnas)
+        Localidad.objects.bulk_update(Localidad.objects.all(), self.columnas)
+        Manzana.objects.bulk_update(Manzana.objects.all(), self.columnas)
 
     def handle(self, *args, **kwargs):
         origen = kwargs["origen"]

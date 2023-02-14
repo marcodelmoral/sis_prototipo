@@ -3,7 +3,6 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from sis_prototipo.apps.geo.models import (
-    Demograficos,
     Entidad,
     Localidad,
     Manzana,
