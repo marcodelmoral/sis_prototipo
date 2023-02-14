@@ -28,6 +28,7 @@ class EntidadGeoSerializer(GeoFeatureModelSerializer):
 
     demograficos = DemograficosRelatedField(many=True, read_only=True)
 
+
     class Meta:
         model = Entidad
         geo_field = "geom"

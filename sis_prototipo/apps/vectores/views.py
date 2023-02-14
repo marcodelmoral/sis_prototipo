@@ -4,7 +4,7 @@ from sis_prototipo.apps.geo.models import Entidad
 from sis_prototipo.apps.vectores.dash_apps import (
     analisis_dengue,
     clustering_dengue,
-    series_dengue,
+    series_dengue
 )
 from sis_prototipo.apps.vectores.dash_apps.utils import entidades_opciones_dropdown
 

@@ -23,5 +23,5 @@ urlpatterns = [
         "tablero_dengue",
         SeriesDengueAppView.as_view(),
         name="series_dengue",
-    ),
+    )
 ]
