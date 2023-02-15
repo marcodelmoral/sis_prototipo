@@ -10,22 +10,8 @@ from sis_prototipo.apps.geo.models import (
 )
 
 
-class DemograficosSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Demograficos
-        fields = ["pobtot", "pobmas", "pobfem"]
-
-
-class DemograficosRelatedField(serializers.RelatedField):
-    def to_representation(self, value):
-        serializer = DemograficosSerializer(value)
-        return serializer.data
-
-
 class EntidadGeoSerializer(GeoFeatureModelSerializer):
     """A class to serialize locations as GeoJSON compatible data"""
-
-    demograficos = DemograficosRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Entidad

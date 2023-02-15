@@ -36,28 +36,101 @@ class Command(BaseCommand):
 
         db_uri = f"postgresql://{username}:{password}@{host}:5432/{database}"
 
+        self.columnas = [
+            "pobtot",
+            "pobmas",
+            "pobfem",
+        ]
+
         self.engine = create_engine(db_uri).connect()
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "origen",
+            "mgn",
             nargs="?",
             type=str,
-            help="Carpeta origen",
+            help="Carpeta marco",
             default="data/mgn",
         )
+        parser.add_argument(
+            "censo",
+            nargs="?",
+            type=str,
+            help="Carpeta censo",
+            default="data/poblacion/censo2020",
+        )
 
-    def procesa_shp(self, origen):
+    def procesa_censo(self, censo):
+        lista_censo_df = [
+            pd.read_csv(archivo, low_memory=False, encoding="utf-8")
+            for archivo in pathlib.Path(censo).glob("*/conjunto_de_datos/*.csv")
+        ]
+
+        censo_df = pd.concat(lista_censo_df)
+
+        censo_df.columns = [columna.lower() for columna in censo_df.columns]
+
+        censo_df = censo_df[censo_df["nom_loc"] != "Total AGEB urbana"]
+
+        censo_df.reset_index(drop=True, inplace=True)
+
+        censo_df.replace("*", 0, inplace=True)
+
+    def procesa_shp(self, mgn, censo):
         list_entidades = []
         list_municipios = []
         list_localidades = []
         list_localidades_puntuales = []
         list_manzanas = []
 
-        estados = list(pathlib.Path(origen).glob("*/conjunto_de_datos"))
+        estados = list(pathlib.Path(mgn).glob("*/conjunto_de_datos"))
         estados = sorted(
             estados, key=lambda x: int(str(x).split("/")[2].split("_")[0])
         )
+
+        lista_censo_df = [
+            pd.read_csv(archivo, low_memory=False, encoding="utf-8")
+            for archivo in pathlib.Path(censo).glob("*/conjunto_de_datos/*.csv")
+        ]
+
+        censo_df = pd.concat(lista_censo_df)
+
+        censo_df.columns = [columna.lower() for columna in censo_df.columns]
+
+        censo_df = censo_df[censo_df["nom_loc"] != "Total AGEB urbana"]
+
+        censo_df.reset_index(drop=True, inplace=True)
+
+        censo_df.replace("*", 0, inplace=True)
+
+        censo_entidad_df = censo_df[censo_df['nom_loc'].str.contains('Total de la entidad')]
+        censo_entidad_df = censo_entidad_df.drop(['nom_ent', 'mun', 'nom_mun', 'loc', 'nom_loc', 'ageb', 'mza'], axis=1)
+        censo_entidad_df['entidad'] = censo_entidad_df['entidad'].astype(str).str.zfill(2)
+        censo_entidad_df = censo_entidad_df.rename(columns={'entidad': 'cvegeo'})
+        censo_entidad_df = censo_entidad_df[["cvegeo"] + self.columnas]
+
+        censo_municipio_df = censo_df[censo_df['nom_loc'].str.contains('Total del municipio')]
+        censo_municipio_df['entidad'] = censo_municipio_df['entidad'].astype(str).str.zfill(2)
+        censo_municipio_df['mun'] = censo_municipio_df['mun'].astype(str).str.zfill(3)
+        censo_municipio_df['cvegeo'] = censo_municipio_df['entidad'] + censo_municipio_df['mun']
+        censo_municipio_df = censo_municipio_df[["cvegeo"] + self.columnas]
+
+        censo_localidad_df = censo_df[censo_df['nom_loc'].str.contains('Total de la localidad urbana')]
+        censo_localidad_df['entidad'] = censo_localidad_df['entidad'].astype(str).str.zfill(2)
+        censo_localidad_df['mun'] = censo_localidad_df['mun'].astype(str).str.zfill(3)
+        censo_localidad_df['loc'] = censo_localidad_df['loc'].astype(str).str.zfill(4)
+        censo_localidad_df['cvegeo'] = censo_localidad_df['entidad'] + censo_localidad_df['mun'] + censo_localidad_df[
+            'loc']
+        censo_localidad_df = censo_localidad_df[["cvegeo"] + self.columnas]
+
+        censo_manzana_df = censo_df[censo_df['mza'] != 0]
+        censo_manzana_df['entidad'] = censo_manzana_df['entidad'].astype(str).str.zfill(2)
+        censo_manzana_df['mun'] = censo_manzana_df['mun'].astype(str).str.zfill(3)
+        censo_manzana_df['loc'] = censo_manzana_df['loc'].astype(str).str.zfill(4)
+        censo_manzana_df['mza'] = censo_manzana_df['mza'].astype(str).str.zfill(3)
+        censo_manzana_df['cvegeo'] = censo_manzana_df['entidad'] + censo_manzana_df['mun'] + censo_manzana_df['loc'] + \
+                                     censo_manzana_df['ageb'] + censo_manzana_df['mza']
+        censo_manzana_df = censo_manzana_df[["cvegeo"] + self.columnas]
 
         for archivo in estados:
             estado = archivo.parent.stem.split("_")[0]
@@ -146,6 +219,14 @@ class Command(BaseCommand):
             "geom"
         )
         entidades.to_crs(crs=settings.CRS, inplace=True)
+
+        entidades.columns = map(str.lower, entidades.columns)
+
+        entidades = gpd.GeoDataFrame(
+            pd.merge(entidades, censo_entidad_df, on='cvegeo').apply(pd.to_numeric, errors='ignore'))
+        entidades["cvegeo"] = entidades["cvegeo"].astype(str).str.zfill(2)
+        print(entidades.columns)
+        print(entidades)
         municipios = gpd.GeoDataFrame(
             pd.concat(list_municipios)# , crs="epsg:6372"
         )
@@ -157,6 +238,15 @@ class Command(BaseCommand):
             columns={"geometry": "geom"}
         ).set_geometry("geom")
         municipios.to_crs(crs=settings.CRS, inplace=True)
+        municipios.columns = map(str.lower, municipios.columns)
+        municipios['cve_ent'] = municipios['cve_ent'].astype(str).str.zfill(2)
+        municipios['entidad_id'] = municipios['cve_ent']
+
+        municipios['cve_mun'] = municipios['cve_mun'].astype(str).str.zfill(3)
+        municipios = gpd.GeoDataFrame(
+            pd.merge(municipios, censo_municipio_df, on='cvegeo').apply(pd.to_numeric, errors='ignore'))
+
+        print(municipios.columns)
         localidades = gpd.GeoDataFrame(
             pd.concat(list_localidades)# , crs="epsg:6372"
         )
@@ -169,31 +259,51 @@ class Command(BaseCommand):
             columns={"geometry": "geom"}
         ).set_geometry("geom")
         localidades.to_crs(crs=settings.CRS, inplace=True)
-        localidades_puntual = gpd.GeoDataFrame(
-            pd.concat(list_localidades_puntuales)# , crs="epsg:6372"
-        )
-        localidades_puntual["puntual"] = True
-        localidades_puntual = localidades_puntual[
-            ~localidades_puntual["CVEGEO"].isin(localidades["CVEGEO"])
-        ]
-        localidades_puntual = localidades_puntual.rename(
-            columns={"geometry": "geom"}
-        ).set_geometry("geom")
-        localidades_puntual.to_crs(crs=settings.CRS, inplace=True)
+        localidades.columns = map(str.lower, localidades.columns)
+        print(localidades.columns)
+        localidades['cve_ent'] = localidades['cve_ent'].astype(str).str.zfill(2)
+        localidades['cve_mun'] = localidades['cve_mun'].astype(str).str.zfill(3)
+        localidades['cve_loc'] = localidades['cve_loc'].astype(str).str.zfill(4)
+
+        localidades = gpd.GeoDataFrame(
+            pd.merge(localidades, censo_localidad_df, on='cvegeo').apply(pd.to_numeric, errors='ignore'))
+
+        # localidades_puntual = gpd.GeoDataFrame(
+        #     pd.concat(list_localidades_puntuales)# , crs="epsg:6372"
+        # )
+        # localidades_puntual["puntual"] = True
+        # localidades_puntual = localidades_puntual[
+        #     ~localidades_puntual["CVEGEO"].isin(localidades["CVEGEO"])
+        # ]
+        # localidades_puntual = localidades_puntual.rename(
+        #     columns={"geometry": "geom"}
+        # ).set_geometry("geom")
+        # localidades_puntual.to_crs(crs=settings.CRS, inplace=True)
         manzanas = gpd.GeoDataFrame(pd.concat(list_manzanas)# , crs="epsg:6372"
                                     )
+        manzanas["geometry"] = [
+            MultiPolygon([feature]) if isinstance(feature, Polygon) else feature
+            for feature in manzanas["geometry"]
+        ]
         manzanas = manzanas.rename(columns={"geometry": "geom"}).set_geometry(
             "geom"
         )
         manzanas.to_crs(crs=settings.CRS, inplace=True)
-
-        entidades.columns = map(str.lower, entidades.columns)
-        municipios.columns = map(str.lower, municipios.columns)
-        localidades.columns = map(str.lower, localidades.columns)
-        localidades_puntual.columns = map(
-            str.lower, localidades_puntual.columns
-        )
         manzanas.columns = map(str.lower, manzanas.columns)
+        manzanas['cve_ent'] = manzanas['cve_ent'].astype(str).str.zfill(2)
+        manzanas['cve_mun'] = manzanas['cve_mun'].astype(str).str.zfill(3)
+        manzanas['cve_loc'] = manzanas['cve_loc'].astype(str).str.zfill(4)
+        manzanas['cve_mza'] = manzanas['cve_mza'].astype(str).str.zfill(3)
+        manzanas = gpd.GeoDataFrame(
+            pd.merge(manzanas, censo_manzana_df, on='cvegeo').apply(pd.to_numeric, errors='ignore'))
+
+        # entidades.columns = map(str.lower, entidades.columns)
+        # municipios.columns = map(str.lower, municipios.columns)
+        # localidades.columns = map(str.lower, localidades.columns)
+        # # localidades_puntual.columns = map(
+        # #     str.lower, localidades_puntual.columns
+        # # )
+        # manzanas.columns = map(str.lower, manzanas.columns)
 
         self.stdout.write(self.style.NOTICE("Insertando entidades"))
         entidades.to_postgis(
@@ -216,13 +326,13 @@ class Command(BaseCommand):
             index=False,
         )
 
-        self.stdout.write(self.style.NOTICE("Insertando localidades puntuales"))
-        localidades_puntual.to_postgis(
-            Localidad._meta.db_table,
-            self.engine,
-            if_exists="append",
-            index=False,
-        )
+        # self.stdout.write(self.style.NOTICE("Insertando localidades puntuales"))
+        # localidades_puntual.to_postgis(
+        #     Localidad._meta.db_table,
+        #     self.engine,
+        #     if_exists="append",
+        #     index=False,
+        # )
 
         self.stdout.write(self.style.NOTICE("Insertando manzanas"))
         manzanas.to_postgis(
@@ -230,10 +340,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
-        origen = kwargs["origen"]
+        mgn = kwargs["mgn"]
+        censo = kwargs["censo"]
         self.stdout.write(self.style.WARNING("Procesando SHPs"))
         start_time = time.time()
-        self.procesa_shp(origen)
+        self.procesa_shp(mgn, censo)
         tiempo = (time.time() - start_time) / 60
         self.stdout.write(
             self.style.SUCCESS(f"Tiempo transcurrido: {tiempo:3f} minutos")

@@ -44,7 +44,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.WARNING("Preparando el sistema"))
         start_time = time.time()
         management.call_command("carga_mgn")
-        management.call_command("carga_censo")
+        # management.call_command("carga_censo")
         management.call_command("carga_agregados")
         management.call_command("carga_dengue")
         tiempo = (time.time() - start_time) / 60
