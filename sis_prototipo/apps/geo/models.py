@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from django.contrib.gis.db import models
@@ -8,6 +7,8 @@ from django.contrib.gis.db import models
 class DivisionGeografica(models.Model):
     geom = models.MultiPolygonField(srid=settings.CRS)
     cve_ent = models.CharField(max_length=2)
+    area = models.FloatField()
+    densidad = models.FloatField()
     pobtot = models.PositiveIntegerField(
         "Población total",
         null=True,
