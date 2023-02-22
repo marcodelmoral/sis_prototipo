@@ -21,6 +21,9 @@ echo "supervised systemd" >> /etc/redis/redis.conf
 
 systemctl enable redis-server.service
 
+locale-gen es
+update-locale
+
 # Crea la base de datos
 -u postgres createdb geo
 -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'contra';"
